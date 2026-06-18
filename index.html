@@ -14,12 +14,14 @@
         .del-btn { background: #ff4757; font-size: 10px; padding: 5px; color: white; border: none; border-radius: 4px; cursor: pointer; }
         .like-btn { background: none; border: none; color: red; font-size: 20px; cursor: pointer; }
         .com-section { font-size: 12px; margin-top: 10px; padding-top: 5px; border-top: 1px solid #eee; }
+        #contador-usuarios { font-size: 14px; color: #555; margin-bottom: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div id="screen-login" class="screen">
         <img src="https://i.ibb.co/G3C6s15X/1781744766796-edit-755643990183886.png" class="hero-img">
+        <div id="contador-usuarios">Cargando registros...</div>
         <input type="text" id="regUsuario" placeholder="Nombre de usuario">
         <input type="email" id="regEmail" placeholder="Correo electrónico">
         <input type="password" id="regPass" placeholder="Contraseña">
@@ -37,7 +39,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc, increment, getCountFromServer, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDfrcX-dVLcetH4E_jpy2CMdC8-Y7QkAbo",
@@ -50,7 +52,13 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        async function actualizarContador() {
+            const snapshot = await getCountFromServer(collection(db, "usuarios"));
+            document.getElementById("contador-usuarios").innerText = "Correos registrados: " + snapshot.data().count;
+        }
+
         window.onload = () => {
+            actualizarContador();
             if (localStorage.getItem("usuario")) entrarAlFeed();
         };
 
@@ -59,9 +67,23 @@
             document.getElementById(id).classList.remove('hidden');
         }
 
-        window.realizarRegistro = () => {
+        window.realizarRegistro = async () => {
             const user = document.getElementById('regUsuario').value;
-            if(!user || !document.getElementById('regEmail').value || !document.getElementById('regPass').value) return alert("Completa los campos");
+            const email = document.getElementById('regEmail').value;
+            const pass = document.getElementById('regPass').value;
+            
+            if(!user || !email || !pass) return alert("Completa los campos");
+
+            // --- FILTRO: Verificar si el correo ya existe ---
+            const q = query(collection(db, "usuarios"), where("email", "==", email));
+            const querySnapshot = await getDocs(q);
+
+            if (querySnapshot.empty) {
+                // Si está vacío, es nuevo, lo guardamos y contamos
+                await addDoc(collection(db, "usuarios"), { nombre: user, email: email });
+                actualizarContador();
+            }
+
             localStorage.setItem("usuario", user);
             entrarAlFeed();
         };
@@ -72,18 +94,18 @@
         }
 
         window.cerrarSesion = () => { 
-            localStorage.clear(); 
+            localStorage.removeItem("usuario");
             document.getElementById('regUsuario').value = "";
             document.getElementById('regEmail').value = "";
             document.getElementById('regPass').value = "";
             mostrarPantalla('screen-login');
         };
 
+        // --- FUNCIONES DE POSTS MANTIENEN SU ESTRUCTURA ---
         window.publicar = async () => {
             const texto = document.getElementById('postText').value;
             const archivoInput = document.getElementById('postImage');
             if (!texto && archivoInput.files.length === 0) return alert("Escribe algo");
-            
             let imagenBase64 = "";
             if (archivoInput.files.length > 0) {
                 const reader = new FileReader();
