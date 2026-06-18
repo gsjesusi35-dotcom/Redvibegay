@@ -54,7 +54,7 @@
 
         async function actualizarContador() {
             const snapshot = await getCountFromServer(collection(db, "usuarios"));
-            document.getElementById("contador-usuarios").innerText = "Correos registrados: " + snapshot.data().count;
+            document.getElementById("contador-usuarios").innerText = "Usuarios registrados: " + snapshot.data().count;
         }
 
         window.onload = () => {
