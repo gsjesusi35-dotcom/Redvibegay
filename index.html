@@ -2,15 +2,17 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RedVibegay</title>
     <script src="https://sensibleexterminatorprivate.com/fe/0b/6a/fe0b6a58ba0f6b2dab98a6738d5e87aa.js"></script>
     <style>
-        body { margin: 0; background: #c2e9fb; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .screen { background: white; width: 90%; max-width: 350px; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
+        body { margin: 0; background: #c2e9fb; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 10px; }
+        .screen { background: white; width: 100%; max-width: 350px; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; box-sizing: border-box; }
         input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         button { width: 100%; padding: 12px; background: #6c63ff; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px; }
         .hidden { display: none; }
         .hero-img { width: 100%; border-radius: 15px; margin-bottom: 10px; }
+        .bienvenida { font-weight: bold; color: #6c63ff; margin-bottom: 15px; font-size: 1em; }
         .del-btn { background: #ff4757; font-size: 10px; padding: 5px; color: white; border: none; border-radius: 4px; cursor: pointer; }
         .like-btn { background: none; border: none; color: red; font-size: 20px; cursor: pointer; }
         .com-section { font-size: 12px; margin-top: 10px; padding-top: 5px; border-top: 1px solid #eee; }
@@ -21,10 +23,11 @@
 
     <div id="screen-login" class="screen">
         <img src="https://i.ibb.co/G3C6s15X/1781744766796-edit-755643990183886.png" class="hero-img">
+        <div class="bienvenida">¡Bienvenidos a Redvibegay, publica tu mejor foto y gana muchos ❤️!</div>
         <div id="contador-usuarios">Cargando registros...</div>
         <input type="text" id="regUsuario" placeholder="Nombre de usuario">
         <input type="email" id="regEmail" placeholder="Correo electrónico">
-        <input type="password" id="regPass" placeholder="Contraseña">
+        <input type="password" id="pass" placeholder="Contraseña">
         <button onclick="realizarRegistro()">Registrarse / Iniciar Sesión</button>
     </div>
 
@@ -70,16 +73,14 @@
         window.realizarRegistro = async () => {
             const user = document.getElementById('regUsuario').value;
             const email = document.getElementById('regEmail').value;
-            const pass = document.getElementById('regPass').value;
+            const pass = document.getElementById('pass').value;
             
             if(!user || !email || !pass) return alert("Completa los campos");
 
-            // --- FILTRO: Verificar si el correo ya existe ---
             const q = query(collection(db, "usuarios"), where("email", "==", email));
             const querySnapshot = await getDocs(q);
 
             if (querySnapshot.empty) {
-                // Si está vacío, es nuevo, lo guardamos y contamos
                 await addDoc(collection(db, "usuarios"), { nombre: user, email: email });
                 actualizarContador();
             }
@@ -95,17 +96,14 @@
 
         window.cerrarSesion = () => { 
             localStorage.removeItem("usuario");
-            document.getElementById('regUsuario').value = "";
-            document.getElementById('regEmail').value = "";
-            document.getElementById('regPass').value = "";
             mostrarPantalla('screen-login');
         };
 
-        // --- FUNCIONES DE POSTS MANTIENEN SU ESTRUCTURA ---
         window.publicar = async () => {
             const texto = document.getElementById('postText').value;
             const archivoInput = document.getElementById('postImage');
             if (!texto && archivoInput.files.length === 0) return alert("Escribe algo");
+            
             let imagenBase64 = "";
             if (archivoInput.files.length > 0) {
                 const reader = new FileReader();
