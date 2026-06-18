@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RedVibegay</title>
     
-    <!-- Script de Adsterra -->
     <script src="https://sensibleexterminatorprivate.com/fe/0b/6a/fe0b6a58ba0f6b2dab98a6738d5e87aa.js"></script>
 
     <style>
@@ -28,6 +27,19 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
             text-align: center; 
         }
+        /* Estilo para las fotos */
+        .photo-grid {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .photo-grid img {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            object-fit: cover;
+        }
         input { 
             width: 100%; 
             padding: 10px; 
@@ -44,12 +56,20 @@
             border: none; 
             border-radius: 10px; 
             cursor: pointer; 
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
 
     <div class="screen" id="login-screen">
+        <div class="photo-grid">
+            <img src="https://i.imgur.com/u1xL27E.jpeg" alt="Foto 1">
+            <img src="https://i.imgur.com/u1xL27E.jpeg" alt="Foto 2">
+            <img src="https://i.imgur.com/u1xL27E.jpeg" alt="Foto 3">
+            <img src="https://i.imgur.com/u1xL27E.jpeg" alt="Foto 4">
+        </div>
+
         <h2>Bienvenido</h2>
         <input type="text" id="user" placeholder="Nombre de usuario">
         <input type="email" id="email" placeholder="Correo electrónico">
@@ -60,7 +80,7 @@
     <script>
         function login() {
             alert("Redireccionando...");
-            // Aquí iría tu lógica de Firebase
+            // Aquí puedes conectar tu lógica de Firebase después
         }
     </script>
 </body>
