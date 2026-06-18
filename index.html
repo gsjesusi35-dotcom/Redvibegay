@@ -102,6 +102,7 @@
             if (!texto && archivoInput.files.length === 0) return alert("Escribe algo");
             let imagenBase64 = await procesarImagen(archivoInput);
             await addDoc(collection(db, "posts"), { contenido: texto, imagenPost: imagenBase64, autor: localStorage.getItem("usuario"), fecha: new Date(), likes: 0 });
+            alert("¡Nueva publicación de " + localStorage.getItem("usuario") + "!");
             document.getElementById('postText').value = ""; archivoInput.value = "";
         };
 
