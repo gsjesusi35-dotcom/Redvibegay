@@ -27,12 +27,11 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
             text-align: center; 
         }
+        /* Ajuste para que la foto no sea circular y se vea normal */
         .my-photo {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
+            width: 100%;
+            border-radius: 10px;
             margin-bottom: 15px;
-            object-fit: cover;
         }
         input { 
             width: 100%; 
@@ -57,7 +56,7 @@
 <body>
 
     <div class="screen" id="login-screen">
-        <img src="https://i.ibb.co/G3C6s15X/1781744766796-edit-755643990183886.png" class="my-photo" alt="Perfil">
+        <img src="https://i.ibb.co/G3C6s15X/1781744766796-edit-755643990183886.png" class="my-photo" alt="Imagen">
 
         <h2>Bienvenido</h2>
         <input type="text" id="user" placeholder="Nombre de usuario">
@@ -69,7 +68,6 @@
     <script>
         function login() {
             alert("Redireccionando...");
-            // Tu lógica de Firebase va aquí
         }
     </script>
 </body>
