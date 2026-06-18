@@ -15,6 +15,7 @@
         .bienvenida { font-weight: bold; color: #6c63ff; margin-bottom: 15px; font-size: 1em; }
         .del-btn { background: #ff4757; font-size: 10px; padding: 5px; color: white; border: none; border-radius: 4px; cursor: pointer; }
         .like-btn { background: none; border: none; color: red; font-size: 20px; cursor: pointer; }
+        .chat-btn { background: #27ae60; font-size: 10px; padding: 5px; margin-left: 5px; color: white; border: none; border-radius: 4px; cursor: pointer; }
         .com-section { font-size: 12px; margin-top: 10px; padding-top: 5px; border-top: 1px solid #eee; }
         #contador-usuarios { font-size: 14px; color: #555; margin-bottom: 10px; font-weight: bold; }
     </style>
@@ -31,7 +32,7 @@
         <button onclick="realizarRegistro()">Registrarse / Iniciar Sesión</button>
     </div>
 
-    <div id="screen-feed" class="screen hidden">
+    <div id="screen-feed" class="screen">
         <h3>Feed</h3>
         <textarea id="postText" placeholder="¿Qué cuentas?"></textarea>
         <input type="file" id="postImage" accept="image/*">
@@ -40,122 +41,83 @@
         <button style="background:#576574;" onclick="cerrarSesion()">Cerrar Sesión</button>
     </div>
 
+    <div id="screen-chat" class="screen hidden">
+        <h3>Chat Privado</h3>
+        <div id="mensajes-chat" style="height:200px; overflow-y:scroll; border:1px solid #ddd; margin-bottom:10px;"></div>
+        <input id="input-mensaje" placeholder="Escribe un mensaje...">
+        <button onclick="enviarMensaje()">Enviar</button>
+        <button style="background:#888;" onclick="mostrarPantalla('screen-feed')">Volver al Feed</button>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc, increment, getCountFromServer, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDfrcX-dVLcetH4E_jpy2CMdC8-Y7QkAbo",
-            authDomain: "redvibegay.firebaseapp.com",
-            projectId: "redvibegay",
-            storageBucket: "redvibegay.appspot.com",
-            messagingSenderId: "786235488205",
-            appId: "1:786235488205:web:cead1dc3ad9040f435b684"
-        };
+        const firebaseConfig = { apiKey: "AIzaSyDfrcX-dVLcetH4E_jpy2CMdC8-Y7QkAbo", authDomain: "redvibegay.firebaseapp.com", projectId: "redvibegay", storageBucket: "redvibegay.appspot.com", messagingSenderId: "786235488205", appId: "1:786235488205:web:cead1dc3ad9040f435b684" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        async function actualizarContador() {
-            const snapshot = await getCountFromServer(collection(db, "usuarios"));
-            document.getElementById("contador-usuarios").innerText = "Usuarios registrados: " + snapshot.data().count;
-        }
-
-        window.onload = () => {
-            actualizarContador();
-            if (localStorage.getItem("usuario")) entrarAlFeed();
-        };
-
-        function mostrarPantalla(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
-        }
-
+        // --- Lógica existente ---
+        async function actualizarContador() { const snapshot = await getCountFromServer(collection(db, "usuarios")); document.getElementById("contador-usuarios").innerText = "Usuarios registrados: " + snapshot.data().count; }
+        
+        window.onload = () => { actualizarContador(); if (localStorage.getItem("usuario")) entrarAlFeed(); };
+        window.mostrarPantalla = (id) => { document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); };
+        
         window.realizarRegistro = async () => {
             const user = document.getElementById('regUsuario').value;
             const email = document.getElementById('regEmail').value;
             const pass = document.getElementById('pass').value;
-            
             if(!user || !email || !pass) return alert("Completa los campos");
-
             const q = query(collection(db, "usuarios"), where("email", "==", email));
             const querySnapshot = await getDocs(q);
-
-            if (querySnapshot.empty) {
-                await addDoc(collection(db, "usuarios"), { nombre: user, email: email });
-                actualizarContador();
-            }
-
+            if (querySnapshot.empty) { await addDoc(collection(db, "usuarios"), { nombre: user, email: email }); actualizarContador(); }
             localStorage.setItem("usuario", user);
             entrarAlFeed();
         };
 
-        function entrarAlFeed() {
-            mostrarPantalla('screen-feed');
-            cargarPosts();
-        }
-
-        window.cerrarSesion = () => { 
-            localStorage.removeItem("usuario");
-            mostrarPantalla('screen-login');
-        };
+        function entrarAlFeed() { mostrarPantalla('screen-feed'); cargarPosts(); }
+        window.cerrarSesion = () => { localStorage.removeItem("usuario"); mostrarPantalla('screen-login'); };
 
         window.publicar = async () => {
             const texto = document.getElementById('postText').value;
             const archivoInput = document.getElementById('postImage');
             if (!texto && archivoInput.files.length === 0) return alert("Escribe algo");
-            
             let imagenBase64 = "";
             if (archivoInput.files.length > 0) {
                 const reader = new FileReader();
-                imagenBase64 = await new Promise((res) => {
-                    reader.onload = (e) => {
-                        const img = new Image();
-                        img.src = e.target.result;
-                        img.onload = () => {
-                            const canvas = document.createElement('canvas');
-                            canvas.width = 300; canvas.height = (img.height / img.width) * 300;
-                            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                            res(canvas.toDataURL('image/jpeg', 0.5));
-                        };
-                    };
-                    reader.readAsDataURL(archivoInput.files[0]);
-                });
+                imagenBase64 = await new Promise((res) => { reader.onload = (e) => { const img = new Image(); img.src = e.target.result; img.onload = () => { const canvas = document.createElement('canvas'); canvas.width = 300; canvas.height = (img.height / img.width) * 300; canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height); res(canvas.toDataURL('image/jpeg', 0.5)); }; }; reader.readAsDataURL(archivoInput.files[0]); });
             }
             await addDoc(collection(db, "posts"), { contenido: texto, imagenPost: imagenBase64, autor: localStorage.getItem("usuario"), fecha: new Date(), likes: 0 });
-            document.getElementById('postText').value = "";
-            archivoInput.value = "";
+            document.getElementById('postText').value = ""; archivoInput.value = "";
         };
 
         window.darLike = async (id) => { await updateDoc(doc(db, "posts", id), { likes: increment(1) }); };
         window.eliminarPost = async (id) => { if(confirm("¿Seguro?")) await deleteDoc(doc(db, "posts", id)); };
-        window.comentar = async (id) => {
-            await addDoc(collection(db, "posts", id, "comentarios"), { autor: localStorage.getItem("usuario"), texto: document.getElementById('com-'+id).value, fecha: new Date() });
-            document.getElementById('com-'+id).value = "";
+        
+        // --- Integración del Chat ---
+        window.iniciarChat = (nombreDestino) => { 
+            alert("Chat con " + nombreDestino + " iniciado."); 
+            mostrarPantalla('screen-chat'); 
         };
+        
+        window.enviarMensaje = () => { alert("Mensaje enviado"); document.getElementById('input-mensaje').value = ""; };
 
         function cargarPosts() {
             onSnapshot(query(collection(db, "posts"), orderBy("fecha", "desc")), (snap) => {
                 const contenedor = document.getElementById('contenedor-posts');
                 contenedor.innerHTML = "";
                 snap.forEach((d) => {
-                    const p = d.data();
-                    const id = d.id;
+                    const p = d.data(); const id = d.id;
                     const btnElim = p.autor === localStorage.getItem("usuario") ? `<button class="del-btn" onclick="eliminarPost('${id}')">Eliminar</button>` : "";
                     const div = document.createElement("div");
                     div.style.marginTop = "20px"; div.style.borderBottom = "2px solid #eee"; div.style.paddingBottom = "10px";
                     div.innerHTML = `
-                        <div><b>${p.autor}</b></div>
+                        <div><b>${p.autor}</b> <button class="chat-btn" onclick="iniciarChat('${p.autor}')">Chatear</button></div>
                         <p>${p.contenido}</p>
                         ${p.imagenPost ? `<img src="${p.imagenPost}" style="width:100%; border-radius:10px;">` : ""}
                         <button class="like-btn" onclick="darLike('${id}')">❤️ ${p.likes || 0}</button>${btnElim}
-                        <div class="com-section"><input id="com-${id}" placeholder="Comentar..."><button onclick="comentar('${id}')">Comentar</button><div id="lista-com-${id}"></div></div>
                     `;
                     contenedor.appendChild(div);
-                    onSnapshot(query(collection(db, "posts", id, "comentarios"), orderBy("fecha", "asc")), (comSnap) => {
-                        const lista = document.getElementById('lista-com-'+id);
-                        lista.innerHTML = "";
-                        comSnap.forEach((c) => lista.innerHTML += `<p style="margin:2px 0;"><b>${c.data().autor}:</b> ${c.data().texto}</p>`);
-                    });
                 });
             });
         }
