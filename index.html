@@ -2,580 +2,66 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RedVibegay</title>
+    
+    <!-- Script de Adsterra -->
     <script src="https://sensibleexterminatorprivate.com/fe/0b/6a/fe0b6a58ba0f6b2dab98a6738d5e87aa.js"></script>
+
     <style>
-        body { margin: 0; background: #c2e9fb; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .screen { background: white; width: 90%; max-width: 350px; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
-        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #6c63ff; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px; }
-        .hidden { display: none; }
-        .hero-img { width: 100%; border-radius: 15px; margin-bottom: 10px; }
-        .del-btn { background: #ff4757; font-size: 10px; padding: 5px; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .like-btn { background: none; border: none; color: red; font-size: 20px; cursor: pointer; }
-        .com-section { font-size: 12px; margin-top: 10px; padding-top: 5px; border-top: 1px solid #eee; }
+        body { 
+            margin: 0; 
+            background: #c2e9fb; 
+            font-family: sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            padding: 20px;
+        }
+        .screen { 
+            background: white; 
+            width: 90%; 
+            max-width: 350px; 
+            padding: 20px; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            text-align: center; 
+        }
+        input { 
+            width: 100%; 
+            padding: 10px; 
+            margin: 10px 0; 
+            border: 1px solid #ccc; 
+            border-radius: 10px; 
+            box-sizing: border-box; 
+        }
+        button { 
+            width: 100%; 
+            padding: 10px; 
+            background: #6c63ff; 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+        }
     </style>
 </head>
 <body>
 
-    <div id="screen-login" class="screen">
-        <img src="https://i.ibb.co/G3C6s15X/1781744766796-edit-755643990183886.png" class="hero-img">
-        <input type="text" id="regUsuario" placeholder="Nombre de usuario">
-        <input type="email" id="regEmail" placeholder="Correo electrónico">
-        <input type="password" id="regPass" placeholder="Contraseña">
-        <button onclick="realizarRegistro()">Registrarse / Iniciar Sesión</button>
+    <div class="screen" id="login-screen">
+        <h2>Bienvenido</h2>
+        <input type="text" id="user" placeholder="Nombre de usuario">
+        <input type="email" id="email" placeholder="Correo electrónico">
+        <input type="password" id="pass" placeholder="Contraseña">
+        <button onclick="login()">Registrarse / Iniciar Sesión</button>
     </div>
 
-    <div id="screen-feed" class="screen hidden">
-        <h3>Feed</h3>
-        <textarea id="postText" placeholder="¿Qué cuentas?"></textarea>
-        <input type="file" id="postImage" accept="image/*">
-        <button onclick="publicar()">Publicar</button>
-        <div id="contenedor-posts"></div>
-        <button style="background:#576574;" onclick="cerrarSesion()">Cerrar Sesión</button>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDfrcX-dVLcetH4E_jpy2CMdC8-Y7QkAbo",
-            authDomain: "redvibegay.firebaseapp.com",
-            projectId: "redvibegay",
-            storageBucket: "redvibegay.appspot.com",
-            messagingSenderId: "786235488205",
-            appId: "1:786235488205:web:cead1dc3ad9040f435b684"
-        };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        window.onload = () => {
-            if (localStorage.getItem("usuario")) entrarAlFeed();
-        };
-
-        function mostrarPantalla(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
-        }
-
-        window.realizarRegistro = () => {
-            const user = document.getElementById('regUsuario').value;
-            if(!user || !document.getElementById('regEmail').value || !document.getElementById('regPass').value) return alert("Completa los campos");
-            localStorage.setItem("usuario", user);
-            entrarAlFeed();
-        };
-
-        function entrarAlFeed() {
-            mostrarPantalla('screen-feed');
-            cargarPosts();
-        }
-
-        // --- CIERRE DE SESIÓN SIN RECARGAR (Instantáneo) ---
-        window.cerrarSesion = () => { 
-            localStorage.clear(); 
-            document.getElementById('regUsuario').value = "";
-            document.getElementById('regEmail').value = "";
-            document.getElementById('regPass').value = "";
-            mostrarPantalla('screen-login');
-        };
-
-        window.publicar = async () => {
-            const texto = document.getElementById('postText').value;
-            const archivoInput = document.getElementById('postImage');
-            if (!texto && archivoInput.files.length === 0) return alert("Escribe algo");
-            
-            let imagenBase64 = "";
-            if (archivoInput.files.length > 0) {
-                const reader = new FileReader();
-                imagenBase64 = await new Promise((res) => {
-                    reader.onload = (e) => {
-                        const img = new Image();
-                        img.src = e.target.result;
-                        img.onload = () => {
-                            const canvas = document.createElement('canvas');
-                            canvas.width = 300; canvas.height = (img.height / img.width) * 300;
-                            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                            res(canvas.toDataURL('image/jpeg', 0.5));
-                        };
-                    };
-                    reader.readAsDataURL(archivoInput.files[0]);
-                });
-            }
-            await addDoc(collection(db, "posts"), { contenido: texto, imagenPost: imagenBase64, autor: localStorage.getItem("usuario"), fecha: new Date(), likes: 0 });
-            document.getElementById('postText').value = "";
-            archivoInput.value = "";
-        };
-
-        window.darLike = async (id) => { await updateDoc(doc(db, "posts", id), { likes: increment(1) }); };
-        window.eliminarPost = async (id) => { if(confirm("¿Seguro?")) await deleteDoc(doc(db, "posts", id)); };
-        window.comentar = async (id) => {
-            await addDoc(collection(db, "posts", id, "comentarios"), { autor: localStorage.getItem("usuario"), texto: document.getElementById('com-'+id).value, fecha: new Date() });
-            document.getElementById('com-'+id).value = "";
-        };
-
-        function cargarPosts() {
-            onSnapshot(query(collection(db, "posts"), orderBy("fecha", "desc")), (snap) => {
-                const contenedor = document.getElementById('contenedor-posts');
-                contenedor.innerHTML = "";
-                snap.forEach((d) => {
-                    const p = d.data();
-                    const id = d.id;
-                    const btnElim = p.autor === localStorage.getItem("usuario") ? `<button class="del-btn" onclick="eliminarPost('${id}')">Eliminar</button>` : "";
-                    const div = document.createElement("div");
-                    div.style.marginTop = "20px"; div.style.borderBottom = "2px solid #eee"; div.style.paddingBottom = "10px";
-                    div.innerHTML = `
-                        <div><b>${p.autor}</b></div>
-                        <p>${p.contenido}</p>
-                        ${p.imagenPost ? `<img src="${p.imagenPost}" style="width:100%; border-radius:10px;">` : ""}
-                        <button class="like-btn" onclick="darLike('${id}')">❤️ ${p.likes || 0}</button>${btnElim}
-                        <div class="com-section"><input id="com-${id}" placeholder="Comentar..."><button onclick="comentar('${id}')">Comentar</button><div id="lista-com-${id}"></div></div>
-                    `;
-                    contenedor.appendChild(div);
-                    onSnapshot(query(collection(db, "posts", id, "comentarios"), orderBy("fecha", "asc")), (comSnap) => {
-                        const lista = document.getElementById('lista-com-'+id);
-                        lista.innerHTML = "";
-                        comSnap.forEach((c) => lista.innerHTML += `<p style="margin:2px 0;"><b>${c.data().autor}:</b> ${c.data().texto}</p>`);
-                    });
-                });
-            });
+    <script>
+        function login() {
+            alert("Redireccionando...");
+            // Aquí iría tu lógica de Firebase
         }
     </script>
 </body>
 </html>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>RedVibegay</title>
-    <script src="https://sensibleexterminatorprivate.com/fe/0b/6a/fe0b6a58ba0f6b2dab98a6738d5e87aa.js"></script>
-    <style>
-        body { margin: 0; background: #c2e9fb; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .screen { background: white; width: 90%; max-width: 350px; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
-        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #6c63ff; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px; }
-        .hidden { display: none; }
-        .hero-img { width: 100%; border-radius: 15px; margin-bottom: 10px; }
-        .del-btn { background: #ff4757; font-size: 10px; padding: 5px; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .like-btn { background: none; border: none; color: red; font-size: 20px; cursor: pointer; }
-        .com-section { font-size: 12px; margin-top: 10px; padding-top: 5px; border-top: 1px solid #eee; }
-    </style>
-</head>
-<body>
-
-    <div id="screen-login" class="screen">
-        <img src="https://i.ibb.co/G3C6s15X/1781744766796-edit-755643990183886.png" class="hero-img">
-        <input type="text" id="regUsuario" placeholder="Nombre de usuario">
-        <input type="email" id="regEmail" placeholder="Correo electrónico">
-        <input type="password" id="regPass" placeholder="Contraseña">
-        <button onclick="realizarRegistro()">Registrarse / Iniciar Sesión</button>
-    </div>
-
-    <div id="screen-feed" class="screen hidden">
-        <h3>Feed</h3>
-        <textarea id="postText" placeholder="¿Qué cuentas?"></textarea>
-        <input type="file" id="postImage" accept="image/*">
-        <button onclick="publicar()">Publicar</button>
-        <div id="contenedor-posts"></div>
-        <button style="background:#576574;" onclick="cerrarSesion()">Cerrar Sesión</button>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDfrcX-dVLcetH4E_jpy2CMdC8-Y7QkAbo",
-            authDomain: "redvibegay.firebaseapp.com",
-            projectId: "redvibegay",
-            storageBucket: "redvibegay.appspot.com",
-            messagingSenderId: "786235488205",
-            appId: "1:786235488205:web:cead1dc3ad9040f435b684"
-        };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        window.onload = () => {
-            if (localStorage.getItem("usuario")) entrarAlFeed();
-        };
-
-        function mostrarPantalla(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
-        }
-
-        window.realizarRegistro = () => {
-            const user = document.getElementById('regUsuario').value;
-            if(!user || !document.getElementById('regEmail').value || !document.getElementById('regPass').value) return alert("Completa los campos");
-            localStorage.setItem("usuario", user);
-            entrarAlFeed();
-        };
-
-        function entrarAlFeed() {
-            mostrarPantalla('screen-feed');
-            cargarPosts();
-        }
-
-        // --- CIERRE DE SESIÓN SIN RECARGAR (Instantáneo) ---
-        window.cerrarSesion = () => { 
-            localStorage.clear(); 
-            document.getElementById('regUsuario').value = "";
-            document.getElementById('regEmail').value = "";
-            document.getElementById('regPass').value = "";
-            mostrarPantalla('screen-login');
-        };
-
-        window.publicar = async () => {
-            const texto = document.getElementById('postText').value;
-            const archivoInput = document.getElementById('postImage');
-            if (!texto && archivoInput.files.length === 0) return alert("Escribe algo");
-            
-            let imagenBase64 = "";
-            if (archivoInput.files.length > 0) {
-                const reader = new FileReader();
-                imagenBase64 = await new Promise((res) => {
-                    reader.onload = (e) => {
-                        const img = new Image();
-                        img.src = e.target.result;
-                        img.onload = () => {
-                            const canvas = document.createElement('canvas');
-                            canvas.width = 300; canvas.height = (img.height / img.width) * 300;
-                            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                            res(canvas.toDataURL('image/jpeg', 0.5));
-                        };
-                    };
-                    reader.readAsDataURL(archivoInput.files[0]);
-                });
-            }
-            await addDoc(collection(db, "posts"), { contenido: texto, imagenPost: imagenBase64, autor: localStorage.getItem("usuario"), fecha: new Date(), likes: 0 });
-            document.getElementById('postText').value = "";
-            archivoInput.value = "";
-        };
-
-        window.darLike = async (id) => { await updateDoc(doc(db, "posts", id), { likes: increment(1) }); };
-        window.eliminarPost = async (id) => { if(confirm("¿Seguro?")) await deleteDoc(doc(db, "posts", id)); };
-        window.comentar = async (id) => {
-            await addDoc(collection(db, "posts", id, "comentarios"), { autor: localStorage.getItem("usuario"), texto: document.getElementById('com-'+id).value, fecha: new Date() });
-            document.getElementById('com-'+id).value = "";
-        };
-
-        function cargarPosts() {
-            onSnapshot(query(collection(db, "posts"), orderBy("fecha", "desc")), (snap) => {
-                const contenedor = document.getElementById('contenedor-posts');
-                contenedor.innerHTML = "";
-                snap.forEach((d) => {
-                    const p = d.data();
-                    const id = d.id;
-                    const btnElim = p.autor === localStorage.getItem("usuario") ? `<button class="del-btn" onclick="eliminarPost('${id}')">Eliminar</button>` : "";
-                    const div = document.createElement("div");
-                    div.style.marginTop = "20px"; div.style.borderBottom = "2px solid #eee"; div.style.paddingBottom = "10px";
-                    div.innerHTML = `
-                        <div><b>${p.autor}</b></div>
-                        <p>${p.contenido}</p>
-                        ${p.imagenPost ? `<img src="${p.imagenPost}" style="width:100%; border-radius:10px;">` : ""}
-                        <button class="like-btn" onclick="darLike('${id}')">❤️ ${p.likes || 0}</button>${btnElim}
-                        <div class="com-section"><input id="com-${id}" placeholder="Comentar..."><button onclick="comentar('${id}')">Comentar</button><div id="lista-com-${id}"></div></div>
-                    `;
-                    contenedor.appendChild(div);
-                    onSnapshot(query(collection(db, "posts", id, "comentarios"), orderBy("fecha", "asc")), (comSnap) => {
-                        const lista = document.getElementById('lista-com-'+id);
-                        lista.innerHTML = "";
-                        comSnap.forEach((c) => lista.innerHTML += `<p style="margin:2px 0;"><b>${c.data().autor}:</b> ${c.data().texto}</p>`);
-                    });
-                });
-            });
-        }
-    </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>RedVibegay</title>
-    <script src="https://sensibleexterminatorprivate.com/fe/0b/6a/fe0b6a58ba0f6b2dab98a6738d5e87aa.js"></script>
-    <style>
-        body { margin: 0; background: #c2e9fb; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .screen { background: white; width: 90%; max-width: 350px; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
-        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #6c63ff; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px; }
-        .hidden { display: none; }
-        .hero-img { width: 100%; border-radius: 15px; margin-bottom: 10px; }
-        .del-btn { background: #ff4757; font-size: 10px; padding: 5px; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .like-btn { background: none; border: none; color: red; font-size: 20px; cursor: pointer; }
-        .com-section { font-size: 12px; margin-top: 10px; padding-top: 5px; border-top: 1px solid #eee; }
-    </style>
-</head>
-<body>
-
-    <div id="screen-login" class="screen">
-        <img src="https://i.ibb.co/G3C6s15X/1781744766796-edit-755643990183886.png" class="hero-img">
-        <input type="text" id="regUsuario" placeholder="Nombre de usuario">
-        <input type="email" id="regEmail" placeholder="Correo electrónico">
-        <input type="password" id="regPass" placeholder="Contraseña">
-        <button onclick="realizarRegistro()">Registrarse / Iniciar Sesión</button>
-    </div>
-
-    <div id="screen-feed" class="screen hidden">
-        <h3>Feed</h3>
-        <textarea id="postText" placeholder="¿Qué cuentas?"></textarea>
-        <input type="file" id="postImage" accept="image/*">
-        <button onclick="publicar()">Publicar</button>
-        <div id="contenedor-posts"></div>
-        <button style="background:#576574;" onclick="cerrarSesion()">Cerrar Sesión</button>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDfrcX-dVLcetH4E_jpy2CMdC8-Y7QkAbo",
-            authDomain: "redvibegay.firebaseapp.com",
-            projectId: "redvibegay",
-            storageBucket: "redvibegay.appspot.com",
-            messagingSenderId: "786235488205",
-            appId: "1:786235488205:web:cead1dc3ad9040f435b684"
-        };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        window.onload = () => {
-            if (localStorage.getItem("usuario")) entrarAlFeed();
-        };
-
-        function mostrarPantalla(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
-        }
-
-        window.realizarRegistro = () => {
-            const user = document.getElementById('regUsuario').value;
-            if(!user || !document.getElementById('regEmail').value || !document.getElementById('regPass').value) return alert("Completa los campos");
-            localStorage.setItem("usuario", user);
-            entrarAlFeed();
-        };
-
-        function entrarAlFeed() {
-            mostrarPantalla('screen-feed');
-            cargarPosts();
-        }
-
-        // --- CIERRE DE SESIÓN SIN RECARGAR (Instantáneo) ---
-        window.cerrarSesion = () => { 
-            localStorage.clear(); 
-            document.getElementById('regUsuario').value = "";
-            document.getElementById('regEmail').value = "";
-            document.getElementById('regPass').value = "";
-            mostrarPantalla('screen-login');
-        };
-
-        window.publicar = async () => {
-            const texto = document.getElementById('postText').value;
-            const archivoInput = document.getElementById('postImage');
-            if (!texto && archivoInput.files.length === 0) return alert("Escribe algo");
-            
-            let imagenBase64 = "";
-            if (archivoInput.files.length > 0) {
-                const reader = new FileReader();
-                imagenBase64 = await new Promise((res) => {
-                    reader.onload = (e) => {
-                        const img = new Image();
-                        img.src = e.target.result;
-                        img.onload = () => {
-                            const canvas = document.createElement('canvas');
-                            canvas.width = 300; canvas.height = (img.height / img.width) * 300;
-                            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                            res(canvas.toDataURL('image/jpeg', 0.5));
-                        };
-                    };
-                    reader.readAsDataURL(archivoInput.files[0]);
-                });
-            }
-            await addDoc(collection(db, "posts"), { contenido: texto, imagenPost: imagenBase64, autor: localStorage.getItem("usuario"), fecha: new Date(), likes: 0 });
-            document.getElementById('postText').value = "";
-            archivoInput.value = "";
-        };
-
-        window.darLike = async (id) => { await updateDoc(doc(db, "posts", id), { likes: increment(1) }); };
-        window.eliminarPost = async (id) => { if(confirm("¿Seguro?")) await deleteDoc(doc(db, "posts", id)); };
-        window.comentar = async (id) => {
-            await addDoc(collection(db, "posts", id, "comentarios"), { autor: localStorage.getItem("usuario"), texto: document.getElementById('com-'+id).value, fecha: new Date() });
-            document.getElementById('com-'+id).value = "";
-        };
-
-        function cargarPosts() {
-            onSnapshot(query(collection(db, "posts"), orderBy("fecha", "desc")), (snap) => {
-                const contenedor = document.getElementById('contenedor-posts');
-                contenedor.innerHTML = "";
-                snap.forEach((d) => {
-                    const p = d.data();
-                    const id = d.id;
-                    const btnElim = p.autor === localStorage.getItem("usuario") ? `<button class="del-btn" onclick="eliminarPost('${id}')">Eliminar</button>` : "";
-                    const div = document.createElement("div");
-                    div.style.marginTop = "20px"; div.style.borderBottom = "2px solid #eee"; div.style.paddingBottom = "10px";
-                    div.innerHTML = `
-                        <div><b>${p.autor}</b></div>
-                        <p>${p.contenido}</p>
-                        ${p.imagenPost ? `<img src="${p.imagenPost}" style="width:100%; border-radius:10px;">` : ""}
-                        <button class="like-btn" onclick="darLike('${id}')">❤️ ${p.likes || 0}</button>${btnElim}
-                        <div class="com-section"><input id="com-${id}" placeholder="Comentar..."><button onclick="comentar('${id}')">Comentar</button><div id="lista-com-${id}"></div></div>
-                    `;
-                    contenedor.appendChild(div);
-                    onSnapshot(query(collection(db, "posts", id, "comentarios"), orderBy("fecha", "asc")), (comSnap) => {
-                        const lista = document.getElementById('lista-com-'+id);
-                        lista.innerHTML = "";
-                        comSnap.forEach((c) => lista.innerHTML += `<p style="margin:2px 0;"><b>${c.data().autor}:</b> ${c.data().texto}</p>`);
-                    });
-                });
-            });
-        }
-    </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>RedVibegay</title>
-    <script src="https://sensibleexterminatorprivate.com/fe/0b/6a/fe0b6a58ba0f6b2dab98a6738d5e87aa.js"></script>
-    <style>
-        body { margin: 0; background: #c2e9fb; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .screen { background: white; width: 90%; max-width: 350px; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
-        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #6c63ff; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px; }
-        .hidden { display: none; }
-        .hero-img { width: 100%; border-radius: 15px; margin-bottom: 10px; }
-        .del-btn { background: #ff4757; font-size: 10px; padding: 5px; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .like-btn { background: none; border: none; color: red; font-size: 20px; cursor: pointer; }
-        .com-section { font-size: 12px; margin-top: 10px; padding-top: 5px; border-top: 1px solid #eee; }
-    </style>
-</head>
-<body>
-
-    <div id="screen-login" class="screen">
-        <img src="https://i.ibb.co/G3C6s15X/1781744766796-edit-755643990183886.png" class="hero-img">
-        <input type="text" id="regUsuario" placeholder="Nombre de usuario">
-        <input type="email" id="regEmail" placeholder="Correo electrónico">
-        <input type="password" id="regPass" placeholder="Contraseña">
-        <button onclick="realizarRegistro()">Registrarse / Iniciar Sesión</button>
-    </div>
-
-    <div id="screen-feed" class="screen hidden">
-        <h3>Feed</h3>
-        <textarea id="postText" placeholder="¿Qué cuentas?"></textarea>
-        <input type="file" id="postImage" accept="image/*">
-        <button onclick="publicar()">Publicar</button>
-        <div id="contenedor-posts"></div>
-        <button style="background:#576574;" onclick="cerrarSesion()">Cerrar Sesión</button>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDfrcX-dVLcetH4E_jpy2CMdC8-Y7QkAbo",
-            authDomain: "redvibegay.firebaseapp.com",
-            projectId: "redvibegay",
-            storageBucket: "redvibegay.appspot.com",
-            messagingSenderId: "786235488205",
-            appId: "1:786235488205:web:cead1dc3ad9040f435b684"
-        };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        window.onload = () => {
-            if (localStorage.getItem("usuario")) entrarAlFeed();
-        };
-
-        function mostrarPantalla(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
-        }
-
-        window.realizarRegistro = () => {
-            const user = document.getElementById('regUsuario').value;
-            if(!user || !document.getElementById('regEmail').value || !document.getElementById('regPass').value) return alert("Completa los campos");
-            localStorage.setItem("usuario", user);
-            entrarAlFeed();
-        };
-
-        function entrarAlFeed() {
-            mostrarPantalla('screen-feed');
-            cargarPosts();
-        }
-
-        // --- CIERRE DE SESIÓN SIN RECARGAR (Instantáneo) ---
-        window.cerrarSesion = () => { 
-            localStorage.clear(); 
-            document.getElementById('regUsuario').value = "";
-            document.getElementById('regEmail').value = "";
-            document.getElementById('regPass').value = "";
-            mostrarPantalla('screen-login');
-        };
-
-        window.publicar = async () => {
-            const texto = document.getElementById('postText').value;
-            const archivoInput = document.getElementById('postImage');
-            if (!texto && archivoInput.files.length === 0) return alert("Escribe algo");
-            
-            let imagenBase64 = "";
-            if (archivoInput.files.length > 0) {
-                const reader = new FileReader();
-                imagenBase64 = await new Promise((res) => {
-                    reader.onload = (e) => {
-                        const img = new Image();
-                        img.src = e.target.result;
-                        img.onload = () => {
-                            const canvas = document.createElement('canvas');
-                            canvas.width = 300; canvas.height = (img.height / img.width) * 300;
-                            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                            res(canvas.toDataURL('image/jpeg', 0.5));
-                        };
-                    };
-                    reader.readAsDataURL(archivoInput.files[0]);
-                });
-            }
-            await addDoc(collection(db, "posts"), { contenido: texto, imagenPost: imagenBase64, autor: localStorage.getItem("usuario"), fecha: new Date(), likes: 0 });
-            document.getElementById('postText').value = "";
-            archivoInput.value = "";
-        };
-
-        window.darLike = async (id) => { await updateDoc(doc(db, "posts", id), { likes: increment(1) }); };
-        window.eliminarPost = async (id) => { if(confirm("¿Seguro?")) await deleteDoc(doc(db, "posts", id)); };
-        window.comentar = async (id) => {
-            await addDoc(collection(db, "posts", id, "comentarios"), { autor: localStorage.getItem("usuario"), texto: document.getElementById('com-'+id).value, fecha: new Date() });
-            document.getElementById('com-'+id).value = "";
-        };
-
-        function cargarPosts() {
-            onSnapshot(query(collection(db, "posts"), orderBy("fecha", "desc")), (snap) => {
-                const contenedor = document.getElementById('contenedor-posts');
-                contenedor.innerHTML = "";
-                snap.forEach((d) => {
-                    const p = d.data();
-                    const id = d.id;
-                    const btnElim = p.autor === localStorage.getItem("usuario") ? `<button class="del-btn" onclick="eliminarPost('${id}')">Eliminar</button>` : "";
-                    const div = document.createElement("div");
-                    div.style.marginTop = "20px"; div.style.borderBottom = "2px solid #eee"; div.style.paddingBottom = "10px";
-                    div.innerHTML = `
-                        <div><b>${p.autor}</b></div>
-                        <p>${p.contenido}</p>
-                        ${p.imagenPost ? `<img src="${p.imagenPost}" style="width:100%; border-radius:10px;">` : ""}
-                        <button class="like-btn" onclick="darLike('${id}')">❤️ ${p.likes || 0}</button>${btnElim}
-                        <div class="com-section"><input id="com-${id}" placeholder="Comentar..."><button onclick="comentar('${id}')">Comentar</button><div id="lista-com-${id}"></div></div>
-                    `;
-                    contenedor.appendChild(div);
-                    onSnapshot(query(collection(db, "posts", id, "comentarios"), orderBy("fecha", "asc")), (comSnap) => {
-                        const lista = document.getElementById('lista-com-'+id);
-                        lista.innerHTML = "";
-                        comSnap.forEach((c) => lista.innerHTML += `<p style="margin:2px 0;"><b>${c.data().autor}:</b> ${c.data().texto}</p>`);
-                    });
-                });
-            });
-        }
-    </script>
-</body>
-</html>
-        
