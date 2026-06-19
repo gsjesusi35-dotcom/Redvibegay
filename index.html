@@ -14,7 +14,9 @@
         .hero-img { width: 100%; border-radius: 15px; margin-bottom: 10px; }
         .bienvenida { font-weight: bold; color: #6c63ff; margin-bottom: 15px; font-size: 1em; }
         .del-btn { background: #ff4757; font-size: 10px; padding: 5px; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .like-btn { background: none; border: none; color: red; font-size: 20px; cursor: pointer; }
+        .like-btn, .share-btn { background: none; border: none; cursor: pointer; font-size: 14px; padding: 5px; }
+        .like-btn { color: red; }
+        .share-btn { color: #6c63ff; }
         .chat-btn { background: #27ae60; font-size: 10px; padding: 5px; margin-left: 5px; color: white; border: none; border-radius: 4px; cursor: pointer; }
         .com-section { font-size: 12px; margin-top: 10px; padding-top: 5px; border-top: 1px solid #eee; text-align: left; }
         #contador-usuarios { font-size: 14px; color: #555; margin-bottom: 10px; font-weight: bold; }
@@ -123,6 +125,16 @@
         }
 
         window.darLike = async (id) => { await updateDoc(doc(db, "posts", id), { likes: increment(1) }); };
+        
+        window.compartirPost = async (contenido, id) => {
+            const baseUrl = window.location.href.split('?')[0];
+            const textoParaCompartir = `¡Mira este post en RedVibegay! ${contenido ? '"' + contenido + '"' : ''} \nLink: ${baseUrl}?postId=${id}`;
+            
+            if (navigator.share) {
+                try { await navigator.share({ title: 'RedVibegay', text: textoParaCompartir }); } catch (e) { console.log(e); }
+            } else { alert("Tu navegador no soporta compartir nativamente."); }
+        };
+
         window.eliminarPost = async (id) => { if(confirm("¿Seguro?")) await deleteDoc(doc(db, "posts", id)); };
         
         window.comentar = async (id) => { 
@@ -223,7 +235,7 @@
                     const btnElim = p.autor === localStorage.getItem("usuario") ? `<button class="del-btn" onclick="eliminarPost('${id}')">Eliminar</button>` : "";
                     const div = document.createElement("div");
                     div.style.marginTop = "20px"; div.style.borderBottom = "2px solid #eee"; div.style.paddingBottom = "10px";
-                    div.innerHTML = `<div style="text-align:left;"><b>${p.autor}</b> <button class="chat-btn" onclick="iniciarChat('${p.autor}')">Chatear</button></div><p style="text-align:left;">${p.contenido}</p>${p.imagenPost ? `<img src="${p.imagenPost}" style="width:100%; border-radius:10px;">` : ""}<div style="text-align:left;"><button class="like-btn" onclick="darLike('${id}')">❤️ ${p.likes || 0}</button>${btnElim}</div><div class="com-section"><div id="lista-com-${id}"></div><div style="display:flex; gap:5px;"><input id="com-${id}" placeholder="Comentar..." style="margin:0; font-size:12px;"><button onclick="comentar('${id}')" style="margin:0; width:auto; padding:5px 10px; font-size:12px;">Enviar</button></div></div>`;
+                    div.innerHTML = `<div style="text-align:left;"><b>${p.autor}</b> <button class="chat-btn" onclick="iniciarChat('${p.autor}')">Chatear</button></div><p style="text-align:left;">${p.contenido}</p>${p.imagenPost ? `<img src="${p.imagenPost}" style="width:100%; border-radius:10px;">` : ""}<div style="text-align:left;"><button class="like-btn" onclick="darLike('${id}')">❤️ ${p.likes || 0}</button><button class="share-btn" onclick="compartirPost('${p.contenido}','${id}')">Compartir</button>${btnElim}</div><div class="com-section"><div id="lista-com-${id}"></div><div style="display:flex; gap:5px;"><input id="com-${id}" placeholder="Comentar..." style="margin:0; font-size:12px;"><button onclick="comentar('${id}')" style="margin:0; width:auto; padding:5px 10px; font-size:12px;">Enviar</button></div></div>`;
                     contenedor.appendChild(div);
                     onSnapshot(query(collection(db, "posts", id, "comentarios"), orderBy("fecha", "asc")), (comSnap) => {
                         const lista = document.getElementById('lista-com-'+id); lista.innerHTML = "";
@@ -258,4 +270,5 @@
       appId: "056f9284-e241-4472-966c-1361aea4b14b",
     });
   });
-</script>
+    </script>
+    
