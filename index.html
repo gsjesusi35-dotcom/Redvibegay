@@ -25,6 +25,11 @@
 </head>
 <body>
 
+    <div id="anuncio-flotante" style="position:fixed; bottom:20px; left:10px; right:10px; background:#6c63ff; color:white; padding:15px; border-radius:15px; z-index:9999; box-shadow:0 4px 10px rgba(0,0,0,0.3); text-align:center;">
+        <button onclick="cerrarAnuncio()" style="position:absolute; top:5px; right:10px; background:transparent; border:none; color:white; font-size:20px; cursor:pointer;">&times;</button>
+        <p style="margin:0; font-size:14px;">¡Ahora puedes chatear con personas de todo el mundo! Ve donde dice <b>Live</b>.</p>
+    </div>
+
     <div id="screen-login" class="screen">
         <img src="https://i.ibb.co/G3C6s15X/1781744766796-edit-755643990183886.png" class="hero-img">
         <div class="bienvenida">¡Bienvenidos a Redvibegay, publica tu mejor foto y gana muchos ❤️!</div>
@@ -54,7 +59,7 @@
 
     <div id="screen-chat" class="screen hidden">
         <button style="background:#888;" onclick="mostrarPantalla('screen-mensajes')">⬅️ Volver</button>
-        <h3>Chat Privado</h3>
+        <h3 id="titulo-chat">Chat</h3>
         <div id="mensajes-chat" style="height:200px; overflow-y:scroll; border:1px solid #ddd; margin-bottom:10px; padding: 5px;"></div>
         <input id="input-mensaje" placeholder="Escribe...">
         <input type="file" id="chatImage" accept="image/*">
@@ -69,18 +74,25 @@
         const db = getFirestore(initializeApp(firebaseConfig));
         let chatActivoId = null;
 
-        function actualizarBarras(noLeidos) {
+        window.cerrarAnuncio = () => { document.getElementById('anuncio-flotante').style.display = 'none'; };
+
+        window.actualizarBarras = (noLeidos) => {
             const html = `
                 <div class="nav-bar">
                     <button class="nav-btn" onclick="mostrarPantalla('screen-feed')">Feed</button>
                     <button class="nav-btn" onclick="mostrarPantalla('screen-mensajes')">Msg (${noLeidos})</button>
+                    <button class="nav-btn" style="background:#f1c40f; color:black;" onclick="abrirChatVivo()">Live</button>
                     <button class="nav-btn salir" onclick="cerrarSesion()">Salir</button>
                 </div>`;
-            const tops = document.querySelectorAll('.nav-bar-top');
-            const bottoms = document.querySelectorAll('.nav-bar-bottom');
-            tops.forEach(t => t.innerHTML = html);
-            bottoms.forEach(b => b.innerHTML = html);
+            document.querySelectorAll('.nav-bar-top, .nav-bar-bottom').forEach(el => el.innerHTML = html);
         }
+
+        window.abrirChatVivo = () => {
+            chatActivoId = "CHAT_GLOBAL"; 
+            document.getElementById("titulo-chat").innerText = "Chat Global";
+            mostrarPantalla('screen-chat');
+            cargarMensajes();
+        };
 
         async function actualizarContador() { const snapshot = await getCountFromServer(collection(db, "usuarios")); document.getElementById("contador-usuarios").innerText = "Usuarios registrados: " + snapshot.data().count; }
         window.onload = () => { actualizarContador(); if (localStorage.getItem("usuario")) entrarAlFeed(); };
@@ -102,7 +114,6 @@
             if (!texto && archivoInput.files.length === 0) return alert("Escribe algo");
             let imagenBase64 = await procesarImagen(archivoInput);
             await addDoc(collection(db, "posts"), { contenido: texto, imagenPost: imagenBase64, autor: localStorage.getItem("usuario"), fecha: new Date(), likes: 0 });
-            alert("¡Nueva publicación de " + localStorage.getItem("usuario") + "!");
             document.getElementById('postText').value = ""; archivoInput.value = "";
         };
 
@@ -135,7 +146,9 @@
         };
 
         window.iniciarChat = async (nombreDestino) => { 
-            chatActivoId = nombreDestino; mostrarPantalla('screen-chat'); 
+            chatActivoId = nombreDestino; 
+            document.getElementById("titulo-chat").innerText = "Chat con " + nombreDestino;
+            mostrarPantalla('screen-chat'); 
             const q = query(collection(db, "mensajes"), where("para", "==", localStorage.getItem("usuario")), where("de", "==", nombreDestino), where("leido", "==", false));
             const snap = await getDocs(q); snap.forEach(d => updateDoc(d.ref, { leido: true })); cargarMensajes(); 
         };
@@ -191,9 +204,11 @@
                 const contenedor = document.getElementById('mensajes-chat'); contenedor.innerHTML = "";
                 snap.forEach((d) => {
                     const m = d.data();
-                    const esMiChat = (m.de === localStorage.getItem("usuario") && m.para === chatActivoId) || (m.de === chatActivoId && m.para === localStorage.getItem("usuario"));
+                    const esChatGlobal = (chatActivoId === "CHAT_GLOBAL" && m.para === "CHAT_GLOBAL");
+                    const esChatPrivado = (m.de === localStorage.getItem("usuario") && m.para === chatActivoId) || (m.de === chatActivoId && m.para === localStorage.getItem("usuario"));
                     const estaVisible = (m.de === localStorage.getItem("usuario") ? m.visibleParaDe : m.visibleParaPara);
-                    if (esMiChat && estaVisible) {
+                    
+                    if ((esChatPrivado || esChatGlobal) && estaVisible) {
                         contenedor.innerHTML += `<p style="text-align:${m.de === localStorage.getItem("usuario") ? 'right' : 'left'}"><b>${m.de}:</b> ${m.texto} ${m.imagenMensaje ? `<br><img src="${m.imagenMensaje}" style="width:100px; border-radius:5px;">` : ""}</p>`;
                     }
                 });
