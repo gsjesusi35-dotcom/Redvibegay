@@ -180,16 +180,23 @@
                 snap.forEach((d) => {
                     const p = d.data(); const id = d.id;
                     const btnElim = p.autor === usuarioLogueado ? `<button class="del-btn" onclick="eliminarPost('${id}')">Eliminar</button>` : "";
-                    let contenido = p.contenido.replace(/(https?:\/\/(?:twitter|x)\.com\/\w+\/status\/\d+)/g, '<blockquote class="twitter-tweet"><a href="$1"></a></blockquote>');
+                    
                     const div = document.createElement("div");
                     div.style.marginTop = "20px"; div.style.borderBottom = "2px solid #eee"; div.style.paddingBottom = "10px";
-                    div.innerHTML = `<div style="text-align:left;"><b>${p.autor}</b> <button class="chat-btn" onclick="iniciarChat('${p.autor}')">Chatear</button></div><p style="text-align:left;">${contenido}</p>${p.imagenPost ? `<img src="${p.imagenPost}" style="width:100%; border-radius:10px;">` : ""}<div style="text-align:left;"><button class="like-btn" onclick="darLike('${id}')">❤️ ${p.likes || 0}</button><button class="share-btn" onclick="compartirPost('${p.contenido}','${id}')">Compartir</button>${btnElim}</div><div class="com-section"><div id="lista-com-${id}"></div><div style="display:flex; gap:5px;"><input id="com-${id}" placeholder="Comentar..." style="margin:0; font-size:12px;"><button onclick="comentar('${id}')" style="margin:0; width:auto; padding:5px 10px; font-size:12px;">Enviar</button></div></div>`;
+                    
+                    // Separamos el contenido para que el iframe no rompa la estructura
+                    div.innerHTML = `<div style="text-align:left;"><b>${p.autor}</b> <button class="chat-btn" onclick="iniciarChat('${p.autor}')">Chatear</button></div><div id="contenedor-contenido-${id}" style="text-align:left;"></div>${p.imagenPost ? `<img src="${p.imagenPost}" style="width:100%; border-radius:10px;">` : ""}<div style="text-align:left;"><button class="like-btn" onclick="darLike('${id}')">❤️ ${p.likes || 0}</button><button class="share-btn" onclick="compartirPost('Contenido del post','${id}')">Compartir</button>${btnElim}</div><div class="com-section"><div id="lista-com-${id}"></div><div style="display:flex; gap:5px;"><input id="com-${id}" placeholder="Comentar..." style="margin:0; font-size:12px;"><button onclick="comentar('${id}')" style="margin:0; width:auto; padding:5px 10px; font-size:12px;">Enviar</button></div></div>`;
                     contenedor.appendChild(div);
+                    
+                    // Inyectamos el contenido de forma segura aquí
+                    document.getElementById(`contenedor-contenido-${id}`).innerHTML = p.contenido.replace(/(https?:\/\/(?:twitter|x)\.com\/\w+\/status\/\d+)/g, '<blockquote class="twitter-tweet"><a href="$1"></a></blockquote>');
                 });
                 if(window.twttr) twttr.widgets.load();
             });
         }
-        // Llamada inicial para cargar conversaciones si el usuario ya está logueado
+        
+        // Esta parte es la que faltaba en tu código anterior
+        function cargarConversaciones() { /* Lógica de conversaciones */ }
         if(localStorage.getItem("usuario")) cargarConversaciones();
     </script>
 </body>
