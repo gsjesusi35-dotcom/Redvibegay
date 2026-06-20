@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RedVibegay</title>
     <script src="https://sensibleexterminatorprivate.com/fe/0b/6a/fe0b6a58ba0f6b2dab98a6738d5e87aa.js"></script>
+    <!-- Script de Twitter -->
+    <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
     <style>
         body { margin: 0; background: #c2e9fb; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 10px; }
         .screen { background: white; width: 100%; max-width: 350px; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; box-sizing: border-box; }
@@ -233,9 +235,13 @@
                 snap.forEach((d) => {
                     const p = d.data(); const id = d.id;
                     const btnElim = p.autor === localStorage.getItem("usuario") ? `<button class="del-btn" onclick="eliminarPost('${id}')">Eliminar</button>` : "";
+                    
+                    // Transformar enlaces de Twitter en bloque de cita para que el widget los detecte
+                    let contenido = p.contenido.replace(/(https?:\/\/(?:twitter|x)\.com\/\w+\/status\/\d+)/g, '<blockquote class="twitter-tweet"><a href="$1"></a></blockquote>');
+                    
                     const div = document.createElement("div");
                     div.style.marginTop = "20px"; div.style.borderBottom = "2px solid #eee"; div.style.paddingBottom = "10px";
-                    div.innerHTML = `<div style="text-align:left;"><b>${p.autor}</b> <button class="chat-btn" onclick="iniciarChat('${p.autor}')">Chatear</button></div><p style="text-align:left;">${p.contenido}</p>${p.imagenPost ? `<img src="${p.imagenPost}" style="width:100%; border-radius:10px;">` : ""}<div style="text-align:left;"><button class="like-btn" onclick="darLike('${id}')">❤️ ${p.likes || 0}</button><button class="share-btn" onclick="compartirPost('${p.contenido}','${id}')">Compartir</button>${btnElim}</div><div class="com-section"><div id="lista-com-${id}"></div><div style="display:flex; gap:5px;"><input id="com-${id}" placeholder="Comentar..." style="margin:0; font-size:12px;"><button onclick="comentar('${id}')" style="margin:0; width:auto; padding:5px 10px; font-size:12px;">Enviar</button></div></div>`;
+                    div.innerHTML = `<div style="text-align:left;"><b>${p.autor}</b> <button class="chat-btn" onclick="iniciarChat('${p.autor}')">Chatear</button></div><p style="text-align:left;">${contenido}</p>${p.imagenPost ? `<img src="${p.imagenPost}" style="width:100%; border-radius:10px;">` : ""}<div style="text-align:left;"><button class="like-btn" onclick="darLike('${id}')">❤️ ${p.likes || 0}</button><button class="share-btn" onclick="compartirPost('${p.contenido}','${id}')">Compartir</button>${btnElim}</div><div class="com-section"><div id="lista-com-${id}"></div><div style="display:flex; gap:5px;"><input id="com-${id}" placeholder="Comentar..." style="margin:0; font-size:12px;"><button onclick="comentar('${id}')" style="margin:0; width:auto; padding:5px 10px; font-size:12px;">Enviar</button></div></div>`;
                     contenedor.appendChild(div);
                     onSnapshot(query(collection(db, "posts", id, "comentarios"), orderBy("fecha", "asc")), (comSnap) => {
                         const lista = document.getElementById('lista-com-'+id); lista.innerHTML = "";
@@ -256,6 +262,8 @@
                         });
                     });
                 });
+                // Línea clave para que Twitter detecte los nuevos enlaces en el DOM
+                if(window.twttr) twttr.widgets.load();
             });
         }
     </script>
@@ -266,9 +274,4 @@
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "056f9284-e241-4472-966c-1361aea4b14b",
-    });
-  });
-    </script>
-    
+    await OneS
