@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RedVibegay</title>
     <script src="https://sensibleexterminatorprivate.com/fe/0b/6a/fe0b6a58ba0f6b2dab98a6738d5e87aa.js"></script>
-    <!-- Script de Twitter -->
     <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
     <style>
         body { margin: 0; background: #c2e9fb; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 10px; }
@@ -34,7 +33,7 @@
         <p style="margin:0; font-size:14px;">¡Ahora puedes chatear con personas de todo el mundo! Ve donde dice <b>Live</b>.</p>
     </div>
 
-    <div id="screen-login" class="screen">
+    <div id="screen-login" class="screen hidden">
         <img src="https://i.ibb.co/G3C6s15X/1781744766796-edit-755643990183886.png" class="hero-img">
         <div class="bienvenida">¡Bienvenidos a Redvibegay, publica tu mejor foto y gana muchos ❤️!</div>
         <div id="contador-usuarios">Cargando registros...</div>
@@ -44,7 +43,7 @@
         <button onclick="realizarRegistro()">Registrarse / Iniciar Sesión</button>
     </div>
 
-    <div id="screen-feed" class="screen hidden">
+    <div id="screen-feed" class="screen">
         <div class="nav-bar-top"></div>
         <h3>Feed</h3>
         <textarea id="postText" placeholder="¿Qué cuentas?"></textarea>
@@ -81,17 +80,20 @@
         window.cerrarAnuncio = () => { document.getElementById('anuncio-flotante').style.display = 'none'; };
 
         window.actualizarBarras = (noLeidos) => {
+            const logueado = localStorage.getItem("usuario");
             const html = `
                 <div class="nav-bar">
-                    <button class="nav-btn" onclick="mostrarPantalla('screen-feed')">Feed</button>
+                    ${logueado ? `<button class="nav-btn" onclick="mostrarPantalla('screen-feed')">Feed</button>
                     <button class="nav-btn" onclick="mostrarPantalla('screen-mensajes')">Msg (${noLeidos})</button>
                     <button class="nav-btn" style="background:#f1c40f; color:black;" onclick="abrirChatVivo()">Live</button>
-                    <button class="nav-btn salir" onclick="cerrarSesion()">Salir</button>
+                    <button class="nav-btn salir" onclick="cerrarSesion()">Salir</button>` :
+                    `<button class="nav-btn" onclick="mostrarPantalla('screen-login')">Iniciar Sesión</button>`}
                 </div>`;
             document.querySelectorAll('.nav-bar-top, .nav-bar-bottom').forEach(el => el.innerHTML = html);
         }
 
         window.abrirChatVivo = () => {
+            if(!localStorage.getItem("usuario")) return mostrarPantalla('screen-login');
             chatActivoId = "CHAT_GLOBAL"; 
             document.getElementById("titulo-chat").innerText = "Chat Global";
             mostrarPantalla('screen-chat');
@@ -99,7 +101,13 @@
         };
 
         async function actualizarContador() { const snapshot = await getCountFromServer(collection(db, "usuarios")); document.getElementById("contador-usuarios").innerText = "Usuarios registrados: " + snapshot.data().count; }
-        window.onload = () => { actualizarContador(); if (localStorage.getItem("usuario")) entrarAlFeed(); };
+        
+        window.onload = () => { 
+            actualizarContador(); 
+            cargarPosts(); 
+            actualizarBarras(0);
+        };
+
         window.mostrarPantalla = (id) => { document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); };
         
         window.realizarRegistro = async () => {
@@ -107,13 +115,14 @@
             if(!user || !email || !pass) return alert("Completa los campos");
             const q = query(collection(db, "usuarios"), where("email", "==", email)); const querySnapshot = await getDocs(q);
             if (querySnapshot.empty) { await addDoc(collection(db, "usuarios"), { nombre: user, email: email }); actualizarContador(); }
-            localStorage.setItem("usuario", user); entrarAlFeed();
+            localStorage.setItem("usuario", user); 
+            location.reload();
         };
 
-        function entrarAlFeed() { mostrarPantalla('screen-feed'); cargarPosts(); cargarConversaciones(); }
-        window.cerrarSesion = () => { localStorage.removeItem("usuario"); mostrarPantalla('screen-login'); };
+        window.cerrarSesion = () => { localStorage.removeItem("usuario"); location.reload(); };
 
         window.publicar = async () => {
+            if(!localStorage.getItem("usuario")) return mostrarPantalla('screen-login');
             const texto = document.getElementById('postText').value; const archivoInput = document.getElementById('postImage');
             if (!texto && archivoInput.files.length === 0) return alert("Escribe algo");
             let imagenBase64 = await procesarImagen(archivoInput);
@@ -126,146 +135,62 @@
             return new Promise((res) => { const reader = new FileReader(); reader.onload = (e) => { const img = new Image(); img.src = e.target.result; img.onload = () => { const canvas = document.createElement('canvas'); canvas.width = 300; canvas.height = (img.height / img.width) * 300; canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height); res(canvas.toDataURL('image/jpeg', 0.5)); }; }; reader.readAsDataURL(input.files[0]); });
         }
 
-        window.darLike = async (id) => { await updateDoc(doc(db, "posts", id), { likes: increment(1) }); };
+        window.darLike = async (id) => { 
+            if(!localStorage.getItem("usuario")) return mostrarPantalla('screen-login');
+            await updateDoc(doc(db, "posts", id), { likes: increment(1) }); 
+        };
         
         window.compartirPost = async (contenido, id) => {
             const baseUrl = window.location.href.split('?')[0];
             const textoParaCompartir = `¡Mira este post en RedVibegay! ${contenido ? '"' + contenido + '"' : ''} \nLink: ${baseUrl}?postId=${id}`;
-            
-            if (navigator.share) {
-                try { await navigator.share({ title: 'RedVibegay', text: textoParaCompartir }); } catch (e) { console.log(e); }
-            } else { alert("Tu navegador no soporta compartir nativamente."); }
+            if (navigator.share) { try { await navigator.share({ title: 'RedVibegay', text: textoParaCompartir }); } catch (e) { console.log(e); } } else { alert("Link copiado al portapapeles"); }
         };
 
         window.eliminarPost = async (id) => { if(confirm("¿Seguro?")) await deleteDoc(doc(db, "posts", id)); };
         
         window.comentar = async (id) => { 
+            if(!localStorage.getItem("usuario")) return mostrarPantalla('screen-login');
             const txt = document.getElementById('com-'+id).value;
             if(!txt) return;
             await addDoc(collection(db, "posts", id, "comentarios"), { autor: localStorage.getItem("usuario"), texto: txt, fecha: new Date() }); 
             document.getElementById('com-'+id).value = ""; 
         };
 
-        window.responder = async (postId, comId) => {
-            const txt = document.getElementById('resp-'+comId).value;
-            if(!txt) return;
-            await addDoc(collection(db, "posts", postId, "comentarios", comId, "respuestas"), { autor: localStorage.getItem("usuario"), texto: txt, fecha: new Date() });
-            document.getElementById('resp-'+comId).value = "";
-        };
-
-        window.eliminarComentario = async (postId, comId) => { if(confirm("¿Borrar comentario?")) await deleteDoc(doc(db, "posts", postId, "comentarios", comId)); };
-        window.editarComentario = async (postId, comId, textoActual) => {
-            const nuevoTexto = prompt("Edita tu comentario:", textoActual);
-            if(nuevoTexto !== null && nuevoTexto.trim() !== "") await updateDoc(doc(db, "posts", postId, "comentarios", comId), { texto: nuevoTexto });
-        };
-
         window.iniciarChat = async (nombreDestino) => { 
+            if(!localStorage.getItem("usuario")) return mostrarPantalla('screen-login');
             chatActivoId = nombreDestino; 
             document.getElementById("titulo-chat").innerText = "Chat con " + nombreDestino;
             mostrarPantalla('screen-chat'); 
-            const q = query(collection(db, "mensajes"), where("para", "==", localStorage.getItem("usuario")), where("de", "==", nombreDestino), where("leido", "==", false));
-            const snap = await getDocs(q); snap.forEach(d => updateDoc(d.ref, { leido: true })); cargarMensajes(); 
+            cargarMensajes(); 
         };
 
         window.enviarMensaje = async () => {
             const texto = document.getElementById('input-mensaje').value; 
             const archivoInput = document.getElementById('chatImage'); 
             if (!texto && archivoInput.files.length === 0) return;
-            
             let imagenBase64 = await procesarImagen(archivoInput); 
-            await addDoc(collection(db, "mensajes"), { 
-                de: localStorage.getItem("usuario"), 
-                para: chatActivoId, 
-                texto: texto, 
-                imagenMensaje: imagenBase64, 
-                fecha: new Date(), 
-                leido: false, 
-                visibleParaDe: true, 
-                visibleParaPara: true 
-            });
-            document.getElementById('input-mensaje').value = ""; 
-            archivoInput.value = ""; 
+            await addDoc(collection(db, "mensajes"), { de: localStorage.getItem("usuario"), para: chatActivoId, texto: texto, imagenMensaje: imagenBase64, fecha: new Date(), leido: false, visibleParaDe: true, visibleParaPara: true });
+            document.getElementById('input-mensaje').value = ""; archivoInput.value = ""; 
         };
-
-        window.borrarChat = async (nombre) => {
-            if(!confirm("¿Borrar esta conversación?")) return;
-            const miUsuario = localStorage.getItem("usuario");
-            const q1 = query(collection(db, "mensajes"), where("de", "==", miUsuario), where("para", "==", nombre)); const snap1 = await getDocs(q1); snap1.forEach(d => updateDoc(d.ref, { visibleParaDe: false }));
-            const q2 = query(collection(db, "mensajes"), where("de", "==", nombre), where("para", "==", miUsuario)); const snap2 = await getDocs(q2); snap2.forEach(d => updateDoc(d.ref, { visibleParaPara: false }));
-        };
-
-        function cargarConversaciones() {
-            onSnapshot(query(collection(db, "mensajes")), (snap) => {
-                const contenedor = document.getElementById('usuarios-chat'); contenedor.innerHTML = "";
-                const personas = {}; let totalNoLeidos = 0;
-                snap.forEach((d) => {
-                    const m = d.data(); const visible = (m.de === localStorage.getItem("usuario") ? m.visibleParaDe : m.visibleParaPara);
-                    if (visible && (m.de === localStorage.getItem("usuario") || m.para === localStorage.getItem("usuario"))) {
-                        const otro = m.de === localStorage.getItem("usuario") ? m.para : m.de;
-                        if (!personas[otro]) personas[otro] = { noLeidos: 0 };
-                        if (m.para === localStorage.getItem("usuario") && !m.leido) { personas[otro].noLeidos++; totalNoLeidos++; }
-                    }
-                });
-                actualizarBarras(totalNoLeidos);
-                Object.keys(personas).forEach(nombre => {
-                    contenedor.innerHTML += `<div style="margin:5px; padding:5px; border:1px solid #ddd; border-radius:5px; display:flex; justify-content:space-between; align-items:center;"><span>${nombre} ${personas[nombre].noLeidos > 0 ? '<b>('+personas[nombre].noLeidos+')</b>' : ''}</span><div><button class="chat-btn" onclick="iniciarChat('${nombre}')">Abrir</button><button class="del-btn" onclick="borrarChat('${nombre}')">🗑️</button></div></div>`;
-                });
-            });
-        }
-
-        function cargarMensajes() {
-            onSnapshot(query(collection(db, "mensajes"), orderBy("fecha", "asc")), (snap) => {
-                const contenedor = document.getElementById('mensajes-chat'); contenedor.innerHTML = "";
-                snap.forEach((d) => {
-                    const m = d.data();
-                    const esChatGlobal = (chatActivoId === "CHAT_GLOBAL" && m.para === "CHAT_GLOBAL");
-                    const esChatPrivado = (m.de === localStorage.getItem("usuario") && m.para === chatActivoId) || (m.de === chatActivoId && m.para === localStorage.getItem("usuario"));
-                    const estaVisible = (m.de === localStorage.getItem("usuario") ? m.visibleParaDe : m.visibleParaPara);
-                    
-                    if ((esChatPrivado || esChatGlobal) && estaVisible) {
-                        contenedor.innerHTML += `<p style="text-align:${m.de === localStorage.getItem("usuario") ? 'right' : 'left'}"><b>${m.de}:</b> ${m.texto} ${m.imagenMensaje ? `<br><img src="${m.imagenMensaje}" style="width:100px; border-radius:5px;">` : ""}</p>`;
-                    }
-                });
-            });
-        }
 
         function cargarPosts() {
+            const usuarioLogueado = localStorage.getItem("usuario");
             onSnapshot(query(collection(db, "posts"), orderBy("fecha", "desc")), (snap) => {
                 const contenedor = document.getElementById('contenedor-posts'); contenedor.innerHTML = "";
                 snap.forEach((d) => {
                     const p = d.data(); const id = d.id;
-                    const btnElim = p.autor === localStorage.getItem("usuario") ? `<button class="del-btn" onclick="eliminarPost('${id}')">Eliminar</button>` : "";
-                    
-                    // Transformar enlaces de Twitter en bloque de cita para que el widget los detecte
+                    const btnElim = p.autor === usuarioLogueado ? `<button class="del-btn" onclick="eliminarPost('${id}')">Eliminar</button>` : "";
                     let contenido = p.contenido.replace(/(https?:\/\/(?:twitter|x)\.com\/\w+\/status\/\d+)/g, '<blockquote class="twitter-tweet"><a href="$1"></a></blockquote>');
-                    
                     const div = document.createElement("div");
                     div.style.marginTop = "20px"; div.style.borderBottom = "2px solid #eee"; div.style.paddingBottom = "10px";
                     div.innerHTML = `<div style="text-align:left;"><b>${p.autor}</b> <button class="chat-btn" onclick="iniciarChat('${p.autor}')">Chatear</button></div><p style="text-align:left;">${contenido}</p>${p.imagenPost ? `<img src="${p.imagenPost}" style="width:100%; border-radius:10px;">` : ""}<div style="text-align:left;"><button class="like-btn" onclick="darLike('${id}')">❤️ ${p.likes || 0}</button><button class="share-btn" onclick="compartirPost('${p.contenido}','${id}')">Compartir</button>${btnElim}</div><div class="com-section"><div id="lista-com-${id}"></div><div style="display:flex; gap:5px;"><input id="com-${id}" placeholder="Comentar..." style="margin:0; font-size:12px;"><button onclick="comentar('${id}')" style="margin:0; width:auto; padding:5px 10px; font-size:12px;">Enviar</button></div></div>`;
                     contenedor.appendChild(div);
-                    onSnapshot(query(collection(db, "posts", id, "comentarios"), orderBy("fecha", "asc")), (comSnap) => {
-                        const lista = document.getElementById('lista-com-'+id); lista.innerHTML = "";
-                        comSnap.forEach((c) => {
-                            const cData = c.data(); const cId = c.id;
-                            const controles = cData.autor === localStorage.getItem("usuario") ? `<button onclick="editarComentario('${id}','${cId}','${cData.texto}')" style="font-size:9px;">Edit</button> <button onclick="eliminarComentario('${id}','${cId}')" style="font-size:9px;">X</button>` : "";
-                            lista.innerHTML += `
-                                <div style="margin:4px 0; background:#f0f0f0; padding:4px; border-radius:4px;">
-                                    <b>${cData.autor}:</b> ${cData.texto} 
-                                    <div style="text-align:right;">${controles}</div>
-                                    <div style="display:flex; gap:5px; margin-top:3px;"><input id="resp-${cId}" placeholder="Responder..." style="margin:0; font-size:10px;"><button onclick="responder('${id}','${cId}')" style="margin:0; width:auto; padding:2px 5px; font-size:10px;">Resp</button></div>
-                                    <div id="lista-resp-${cId}" style="margin-left:10px; font-size:11px;"></div>
-                                </div>`;
-                            onSnapshot(query(collection(db, "posts", id, "comentarios", cId, "respuestas"), orderBy("fecha", "asc")), (rSnap) => {
-                                const lR = document.getElementById('lista-resp-'+cId); lR.innerHTML = "";
-                                rSnap.forEach((r) => { lR.innerHTML += `<div style="margin-top:2px;">↳ <b>${r.data().autor}:</b> ${r.data().texto}</div>`; });
-                            });
-                        });
-                    });
                 });
-                // Línea clave para que Twitter detecte los nuevos enlaces en el DOM
                 if(window.twttr) twttr.widgets.load();
             });
         }
+        // Llamada inicial para cargar conversaciones si el usuario ya está logueado
+        if(localStorage.getItem("usuario")) cargarConversaciones();
     </script>
 </body>
 </html>
@@ -274,4 +199,6 @@
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function(OneSignal) {
-    await OneS
+    await OneSignal.init({ appId: "TU_ONESIGNAL_APP_ID" });
+  });
+</script>
