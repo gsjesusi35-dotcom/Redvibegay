@@ -81,32 +81,15 @@
 
         window.actualizarBarras = (noLeidos) => {
             const logueado = localStorage.getItem("usuario");
-            const html = `
-                <div class="nav-bar">
-                    ${logueado ? `<button class="nav-btn" onclick="mostrarPantalla('screen-feed')">Feed</button>
-                    <button class="nav-btn" onclick="mostrarPantalla('screen-mensajes')">Msg (${noLeidos})</button>
-                    <button class="nav-btn" style="background:#f1c40f; color:black;" onclick="abrirChatVivo()">Live</button>
-                    <button class="nav-btn salir" onclick="cerrarSesion()">Salir</button>` :
-                    `<button class="nav-btn" onclick="mostrarPantalla('screen-login')">Iniciar Sesión</button>`}
-                </div>`;
+            const html = `<div class="nav-bar">${logueado ? `<button class="nav-btn" onclick="mostrarPantalla('screen-feed')">Feed</button><button class="nav-btn" onclick="mostrarPantalla('screen-mensajes')">Msg (${noLeidos})</button><button class="nav-btn" style="background:#f1c40f; color:black;" onclick="abrirChatVivo()">Live</button><button class="nav-btn salir" onclick="cerrarSesion()">Salir</button>` : `<button class="nav-btn" onclick="mostrarPantalla('screen-login')">Iniciar Sesión</button>`}</div>`;
             document.querySelectorAll('.nav-bar-top, .nav-bar-bottom').forEach(el => el.innerHTML = html);
         }
 
-        window.abrirChatVivo = () => {
-            if(!localStorage.getItem("usuario")) return mostrarPantalla('screen-login');
-            chatActivoId = "CHAT_GLOBAL"; 
-            document.getElementById("titulo-chat").innerText = "Chat Global";
-            mostrarPantalla('screen-chat');
-            cargarMensajes();
-        };
+        window.abrirChatVivo = () => { if(!localStorage.getItem("usuario")) return mostrarPantalla('screen-login'); chatActivoId = "CHAT_GLOBAL"; document.getElementById("titulo-chat").innerText = "Chat Global"; mostrarPantalla('screen-chat'); };
 
         async function actualizarContador() { const snapshot = await getCountFromServer(collection(db, "usuarios")); document.getElementById("contador-usuarios").innerText = "Usuarios registrados: " + snapshot.data().count; }
         
-        window.onload = () => { 
-            actualizarContador(); 
-            cargarPosts(); 
-            actualizarBarras(0);
-        };
+        window.onload = () => { actualizarContador(); cargarPosts(); actualizarBarras(0); };
 
         window.mostrarPantalla = (id) => { document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); };
         
@@ -115,8 +98,7 @@
             if(!user || !email || !pass) return alert("Completa los campos");
             const q = query(collection(db, "usuarios"), where("email", "==", email)); const querySnapshot = await getDocs(q);
             if (querySnapshot.empty) { await addDoc(collection(db, "usuarios"), { nombre: user, email: email }); actualizarContador(); }
-            localStorage.setItem("usuario", user); 
-            location.reload();
+            localStorage.setItem("usuario", user); location.reload();
         };
 
         window.cerrarSesion = () => { localStorage.removeItem("usuario"); location.reload(); };
@@ -135,15 +117,12 @@
             return new Promise((res) => { const reader = new FileReader(); reader.onload = (e) => { const img = new Image(); img.src = e.target.result; img.onload = () => { const canvas = document.createElement('canvas'); canvas.width = 300; canvas.height = (img.height / img.width) * 300; canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height); res(canvas.toDataURL('image/jpeg', 0.5)); }; }; reader.readAsDataURL(input.files[0]); });
         }
 
-        window.darLike = async (id) => { 
-            if(!localStorage.getItem("usuario")) return mostrarPantalla('screen-login');
-            await updateDoc(doc(db, "posts", id), { likes: increment(1) }); 
-        };
+        window.darLike = async (id) => { if(!localStorage.getItem("usuario")) return mostrarPantalla('screen-login'); await updateDoc(doc(db, "posts", id), { likes: increment(1) }); };
         
         window.compartirPost = async (contenido, id) => {
             const baseUrl = window.location.href.split('?')[0];
-            const textoParaCompartir = `¡Mira este post en RedVibegay! ${contenido ? '"' + contenido + '"' : ''} \nLink: ${baseUrl}?postId=${id}`;
-            if (navigator.share) { try { await navigator.share({ title: 'RedVibegay', text: textoParaCompartir }); } catch (e) { console.log(e); } } else { alert("Link copiado al portapapeles"); }
+            const link = `${baseUrl}?postId=${id}`;
+            if (navigator.share) { try { await navigator.share({ title: 'RedVibegay', text: '¡Mira este post!', url: link }); } catch (e) { console.log(e); } } else { alert("Link copiado: " + link); }
         };
 
         window.eliminarPost = async (id) => { if(confirm("¿Seguro?")) await deleteDoc(doc(db, "posts", id)); };
@@ -156,56 +135,38 @@
             document.getElementById('com-'+id).value = ""; 
         };
 
-        window.iniciarChat = async (nombreDestino) => { 
-            if(!localStorage.getItem("usuario")) return mostrarPantalla('screen-login');
-            chatActivoId = nombreDestino; 
-            document.getElementById("titulo-chat").innerText = "Chat con " + nombreDestino;
-            mostrarPantalla('screen-chat'); 
-            cargarMensajes(); 
-        };
+        window.iniciarChat = async (nombreDestino) => { if(!localStorage.getItem("usuario")) return mostrarPantalla('screen-login'); chatActivoId = nombreDestino; document.getElementById("titulo-chat").innerText = "Chat con " + nombreDestino; mostrarPantalla('screen-chat'); };
 
         window.enviarMensaje = async () => {
             const texto = document.getElementById('input-mensaje').value; 
             const archivoInput = document.getElementById('chatImage'); 
             if (!texto && archivoInput.files.length === 0) return;
             let imagenBase64 = await procesarImagen(archivoInput); 
-            await addDoc(collection(db, "mensajes"), { de: localStorage.getItem("usuario"), para: chatActivoId, texto: texto, imagenMensaje: imagenBase64, fecha: new Date(), leido: false, visibleParaDe: true, visibleParaPara: true });
+            await addDoc(collection(db, "mensajes"), { de: localStorage.getItem("usuario"), para: chatActivoId, texto: texto, imagenMensaje: imagenBase64, fecha: new Date() });
             document.getElementById('input-mensaje').value = ""; archivoInput.value = ""; 
         };
 
         function cargarPosts() {
             const usuarioLogueado = localStorage.getItem("usuario");
+            const urlParams = new URLSearchParams(window.location.search);
+            const postIdParam = urlParams.get('postId');
+
             onSnapshot(query(collection(db, "posts"), orderBy("fecha", "desc")), (snap) => {
                 const contenedor = document.getElementById('contenedor-posts'); contenedor.innerHTML = "";
                 snap.forEach((d) => {
+                    if (postIdParam && d.id !== postIdParam) return;
                     const p = d.data(); const id = d.id;
                     const btnElim = p.autor === usuarioLogueado ? `<button class="del-btn" onclick="eliminarPost('${id}')">Eliminar</button>` : "";
-                    
                     const div = document.createElement("div");
                     div.style.marginTop = "20px"; div.style.borderBottom = "2px solid #eee"; div.style.paddingBottom = "10px";
-                    
-                    // Separamos el contenido para que el iframe no rompa la estructura
-                    div.innerHTML = `<div style="text-align:left;"><b>${p.autor}</b> <button class="chat-btn" onclick="iniciarChat('${p.autor}')">Chatear</button></div><div id="contenedor-contenido-${id}" style="text-align:left;"></div>${p.imagenPost ? `<img src="${p.imagenPost}" style="width:100%; border-radius:10px;">` : ""}<div style="text-align:left;"><button class="like-btn" onclick="darLike('${id}')">❤️ ${p.likes || 0}</button><button class="share-btn" onclick="compartirPost('Contenido del post','${id}')">Compartir</button>${btnElim}</div><div class="com-section"><div id="lista-com-${id}"></div><div style="display:flex; gap:5px;"><input id="com-${id}" placeholder="Comentar..." style="margin:0; font-size:12px;"><button onclick="comentar('${id}')" style="margin:0; width:auto; padding:5px 10px; font-size:12px;">Enviar</button></div></div>`;
+                    div.innerHTML = `<div style="text-align:left;"><b>${p.autor}</b> <button class="chat-btn" onclick="iniciarChat('${p.autor}')">Chatear</button></div><div id="contenedor-contenido-${id}" style="text-align:left;"></div>${p.imagenPost ? `<img src="${p.imagenPost}" style="width:100%; border-radius:10px;">` : ""}<div style="text-align:left;"><button class="like-btn" onclick="darLike('${id}')">❤️ ${p.likes || 0}</button><button class="share-btn" onclick="compartirPost('','${id}')">Compartir</button>${btnElim}</div><div class="com-section"><div id="lista-com-${id}"></div><div style="display:flex; gap:5px;"><input id="com-${id}" placeholder="Comentar..." style="margin:0; font-size:12px;"><button onclick="comentar('${id}')" style="margin:0; width:auto; padding:5px 10px; font-size:12px;">Enviar</button></div></div>`;
                     contenedor.appendChild(div);
-                    
-                    // Inyectamos el contenido de forma segura aquí
                     document.getElementById(`contenedor-contenido-${id}`).innerHTML = p.contenido.replace(/(https?:\/\/(?:twitter|x)\.com\/\w+\/status\/\d+)/g, '<blockquote class="twitter-tweet"><a href="$1"></a></blockquote>');
                 });
                 if(window.twttr) twttr.widgets.load();
+                if (postIdParam) contenedor.innerHTML += `<button onclick="window.location.href='/'" style="background:#555;">⬅️ Ver todo el Feed</button>`;
             });
         }
-        
-        // Esta parte es la que faltaba en tu código anterior
-        function cargarConversaciones() { /* Lógica de conversaciones */ }
-        if(localStorage.getItem("usuario")) cargarConversaciones();
     </script>
 </body>
 </html>
-
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-<script>
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({ appId: "TU_ONESIGNAL_APP_ID" });
-  });
-</script>
