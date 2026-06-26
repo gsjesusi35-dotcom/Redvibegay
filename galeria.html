@@ -34,30 +34,17 @@
             height: auto; 
             border-radius: 8px; 
         }
-        .like-btn { 
-            margin-top: 15px; 
-            padding: 10px 20px; 
-            background-color: #ff3b30; 
-            color: white; 
-            border: none; 
-            border-radius: 5px; 
-            cursor: pointer; 
-            font-weight: bold;
-            transition: background 0.3s;
-        }
-        .like-btn:hover { background-color: #e03026; }
-
-        /* Estilo del botón de Donar */
-        .donate-section { margin-top: 50px; padding: 20px; }
+        /* Estilo del llamado a la acción bajo cada foto */
+        .cta-container { margin-top: 15px; }
+        .cta-text { font-size: 0.9em; margin-bottom: 10px; color: #cccccc; }
         .donate-btn { 
             display: inline-block; 
-            padding: 15px 30px; 
+            padding: 10px 20px; 
             background-color: #0070ba; 
             color: white; 
             text-decoration: none; 
-            border-radius: 25px; 
+            border-radius: 20px; 
             font-weight: bold; 
-            font-size: 1.1em;
             transition: background 0.3s;
         }
         .donate-btn:hover { background-color: #005ea6; }
@@ -66,48 +53,61 @@
 <body>
 
     <h1>Mis Fotos Exclusivas</h1>
-    <p>Dale like a tus favoritas</p>
 
     <div class="gallery">
-        <!-- Nueva Foto 1 -->
+        <!-- Nueva Foto 1 (Principal) -->
         <div class="photo-card">
-            <img src="https://i.ibb.co/dsNGghdj/1782437166877-edit-57684516598745.png" alt="Foto 1">
-            <br>
-            <button class="like-btn" onclick="this.style.backgroundColor='#ffcc00'; this.innerHTML='❤️ Gracias'">❤️ Like</button>
+            <img src="https://i.ibb.co/sdNR0gxy/1782513316505-edit-114326822729813.png" alt="Foto 1">
+            <div class="cta-container">
+                <p class="cta-text">¿Te gusta mi contenido? Me puedes ayudar con una colaboración</p>
+                <a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Donar</a>
+            </div>
         </div>
 
         <!-- Foto 2 -->
         <div class="photo-card">
-            <img src="https://i.ibb.co/m57By2pQ/1782266133921-edit-177826514672982.png" alt="Foto 2">
-            <br>
-            <button class="like-btn" onclick="this.style.backgroundColor='#ffcc00'; this.innerHTML='❤️ Gracias'">❤️ Like</button>
+            <img src="https://i.ibb.co/dsNGghdj/1782437166877-edit-57684516598745.png" alt="Foto 2">
+            <div class="cta-container">
+                <p class="cta-text">¿Te gusta mi contenido? Me puedes ayudar con una colaboración</p>
+                <a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Donar</a>
+            </div>
         </div>
 
         <!-- Foto 3 -->
         <div class="photo-card">
-            <img src="https://i.ibb.co/yc9JCr6J/1782175698413.jpg" alt="Foto 3">
-            <br>
-            <button class="like-btn" onclick="this.style.backgroundColor='#ffcc00'; this.innerHTML='❤️ Gracias'">❤️ Like</button>
+            <img src="https://i.ibb.co/m57By2pQ/1782266133921-edit-177826514672982.png" alt="Foto 3">
+            <div class="cta-container">
+                <p class="cta-text">¿Te gusta mi contenido? Me puedes ayudar con una colaboración</p>
+                <a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Donar</a>
+            </div>
         </div>
 
         <!-- Foto 4 -->
         <div class="photo-card">
-            <img src="https://i.ibb.co/yc6wfK6N/1780699593971-edit-697201919683478.png" alt="Foto 4">
-            <br>
-            <button class="like-btn" onclick="this.style.backgroundColor='#ffcc00'; this.innerHTML='❤️ Gracias'">❤️ Like</button>
+            <img src="https://i.ibb.co/yc9JCr6J/1782175698413.jpg" alt="Foto 4">
+            <div class="cta-container">
+                <p class="cta-text">¿Te gusta mi contenido? Me puedes ayudar con una colaboración</p>
+                <a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Donar</a>
+            </div>
         </div>
 
         <!-- Foto 5 -->
         <div class="photo-card">
-            <img src="https://i.ibb.co/Ngx62gnR/1780699608278-edit-697157840293322.png" alt="Foto 5">
-            <br>
-            <button class="like-btn" onclick="this.style.backgroundColor='#ffcc00'; this.innerHTML='❤️ Gracias'">❤️ Like</button>
+            <img src="https://i.ibb.co/yc6wfK6N/1780699593971-edit-697201919683478.png" alt="Foto 5">
+            <div class="cta-container">
+                <p class="cta-text">¿Te gusta mi contenido? Me puedes ayudar con una colaboración</p>
+                <a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Donar</a>
+            </div>
         </div>
-    </div>
 
-    <div class="donate-section">
-        <p>¿Te gusta mi contenido? Me puedes ayudar con una colaboración</p>
-        <a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Donar</a>
+        <!-- Foto 6 -->
+        <div class="photo-card">
+            <img src="https://i.ibb.co/Ngx62gnR/1780699608278-edit-697157840293322.png" alt="Foto 6">
+            <div class="cta-container">
+                <p class="cta-text">¿Te gusta mi contenido? Me puedes ayudar con una colaboración</p>
+                <a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Donar</a>
+            </div>
+        </div>
     </div>
 
 </body>
