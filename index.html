@@ -77,6 +77,8 @@
         const db = getFirestore(initializeApp(firebaseConfig));
         let chatActivoId = null;
 
+        const obtenerUsuario = () => localStorage.getItem("usuario") || "Invitado";
+
         window.cerrarAnuncio = () => { document.getElementById('anuncio-flotante').style.display = 'none'; };
 
         window.actualizarBarras = (noLeidos) => {
@@ -117,7 +119,7 @@
             return new Promise((res) => { const reader = new FileReader(); reader.onload = (e) => { const img = new Image(); img.src = e.target.result; img.onload = () => { const canvas = document.createElement('canvas'); canvas.width = 300; canvas.height = (img.height / img.width) * 300; canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height); res(canvas.toDataURL('image/jpeg', 0.5)); }; }; reader.readAsDataURL(input.files[0]); });
         }
 
-        window.darLike = async (id) => { if(!localStorage.getItem("usuario")) return mostrarPantalla('screen-login'); await updateDoc(doc(db, "posts", id), { likes: increment(1) }); };
+        window.darLike = async (id) => { await updateDoc(doc(db, "posts", id), { likes: increment(1) }); };
         
         window.compartirPost = async (contenido, id) => {
             const baseUrl = window.location.href.split('?')[0];
@@ -128,10 +130,9 @@
         window.eliminarPost = async (id) => { if(confirm("¿Seguro?")) await deleteDoc(doc(db, "posts", id)); };
         
         window.comentar = async (id) => { 
-            if(!localStorage.getItem("usuario")) return mostrarPantalla('screen-login');
             const txt = document.getElementById('com-'+id).value;
             if(!txt) return;
-            await addDoc(collection(db, "posts", id, "comentarios"), { autor: localStorage.getItem("usuario"), texto: txt, fecha: new Date() }); 
+            await addDoc(collection(db, "posts", id, "comentarios"), { autor: obtenerUsuario(), texto: txt, fecha: new Date() }); 
             document.getElementById('com-'+id).value = ""; 
         };
 
@@ -161,6 +162,16 @@
                     div.style.marginTop = "20px"; div.style.borderBottom = "2px solid #eee"; div.style.paddingBottom = "10px";
                     div.innerHTML = `<div style="text-align:left;"><b>${p.autor}</b> <button class="chat-btn" onclick="iniciarChat('${p.autor}')">Chatear</button></div><div id="contenedor-contenido-${id}" style="text-align:left;"></div>${p.imagenPost ? `<img src="${p.imagenPost}" style="width:100%; border-radius:10px;">` : ""}<div style="text-align:left;"><button class="like-btn" onclick="darLike('${id}')">❤️ ${p.likes || 0}</button><button class="share-btn" onclick="compartirPost('','${id}')">Compartir</button>${btnElim}</div><div class="com-section"><div id="lista-com-${id}"></div><div style="display:flex; gap:5px;"><input id="com-${id}" placeholder="Comentar..." style="margin:0; font-size:12px;"><button onclick="comentar('${id}')" style="margin:0; width:auto; padding:5px 10px; font-size:12px;">Enviar</button></div></div>`;
                     contenedor.appendChild(div);
+
+                    onSnapshot(collection(db, "posts", id, "comentarios"), (snapCom) => {
+                        const listaCom = document.getElementById(`lista-com-${id}`);
+                        listaCom.innerHTML = "";
+                        snapCom.forEach((docCom) => {
+                            const com = docCom.data();
+                            listaCom.innerHTML += `<p><b>${com.autor}:</b> ${com.texto}</p>`;
+                        });
+                    });
+
                     document.getElementById(`contenedor-contenido-${id}`).innerHTML = p.contenido.replace(/(https?:\/\/(?:twitter|x)\.com\/\w+\/status\/\d+)/g, '<blockquote class="twitter-tweet"><a href="$1"></a></blockquote>');
                 });
                 if(window.twttr) twttr.widgets.load();
