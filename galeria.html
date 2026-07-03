@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Galería Exclusiva</title>
     
-    <!-- Script de Adsterra (Solo se ejecutará cuando la galería sea visible) -->
-    <script src="https://sensibleexterminatorprivate.com/a9/e3/1d/a9e31dacbfac71860684e217e832634c.js"></script>
+    <!-- EL SCRIPT DE ADSTERRA YA NO ESTÁ AQUÍ -->
     
     <style>
         body { font-family: 'Arial', sans-serif; background-color: #1a1a1a; color: white; text-align: center; padding: 20px; margin: 0; }
@@ -30,14 +29,14 @@
 </head>
 <body>
 
-    <!-- PANTALLA DE BIENVENIDA -->
+    <!-- PANTALLA DE BIENVENIDA (LIBRE DE ANUNCIOS) -->
     <div id="bienvenida">
         <h1>¡Bienvenidos!</h1>
         <p>En este sitio estaremos subiendo las fotos de los uniformados más guapos del internet.</p>
         <button class="btn-continuar" onclick="mostrarGaleria()">Continuar</button>
     </div>
 
-    <!-- GALERÍA COMPLETA (Oculta al inicio) -->
+    <!-- GALERÍA COMPLETA (AQUÍ SE ACTIVARÁN LOS ANUNCIOS) -->
     <div id="galeria-completa">
         <h1>Mis Fotos Exclusivas</h1>
 
@@ -66,10 +65,18 @@
 
     <script>
         function mostrarGaleria() {
+            // 1. Ocultar el mensaje de bienvenida
             document.getElementById('bienvenida').style.display = 'none';
+            
+            // 2. Mostrar la galería
             document.getElementById('galeria-completa').style.display = 'block';
+            
+            // 3. CARGAR EL SCRIPT DE ADSTERRA AQUÍ
+            // Esto inserta el script en la página solo cuando se muestra la galería
+            var adsterraScript = document.createElement('script');
+            adsterraScript.src = 'https://sensibleexterminatorprivate.com/a9/e3/1d/a9e31dacbfac71860684e217e832634c.js';
+            document.body.appendChild(adsterraScript);
         }
     </script>
 </body>
-    </html>
-    
+</html>
