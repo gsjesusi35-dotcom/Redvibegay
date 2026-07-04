@@ -18,11 +18,11 @@
         #galeria-completa { display: none; }
         
         .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; max-width: 1000px; margin: 30px auto; }
-        .promo-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 600px; margin: 0 auto 30px auto; }
+        .promo-container { display: grid; grid-template-columns: 1fr; gap: 10px; max-width: 600px; margin: 0 auto 30px auto; }
         .photo-card { background: #2d2d2d; padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         .photo-card img { width: 100%; height: auto; border-radius: 8px; }
         .cta-container { margin-top: 15px; }
-        .cta-text { font-size: 0.9em; margin-bottom: 10px; color: #cccccc; line-height: 1.4; }
+        .cta-text { font-size: 0.9em; margin-bottom: 10px; color: #cccccc; }
         .donate-btn { display: inline-block; padding: 10px 20px; background-color: #0070ba; color: white; text-decoration: none; border-radius: 20px; font-weight: bold; transition: background 0.3s; }
         .donate-btn:hover { background-color: #005ea6; }
     </style>
@@ -40,55 +40,18 @@
     <div id="galeria-completa">
         <h1>Mis Fotos Exclusivas</h1>
 
-        <!-- FOTO PRINCIPAL ARRIBA -->
-        <div style="max-width: 600px; margin: 0 auto 30px auto;">
-            <div class="photo-card">
-                <img src="https://i.ibb.co/n8m6mCGV/Dise-o-sin-t-tulo-20260703-231756-0000.jpg" alt="Foto Principal">
-                <div class="cta-container">
-                    <p class="cta-text">¿Te gusta mi contenido? Me puedes ayudar con una colaboración</p>
-                    <a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Donar</a>
-                </div>
-            </div>
+        <div style="margin-bottom: 40px;">
+            <p>¿Te gusta mi contenido? Me puedes ayudar con una colaboración</p>
+            <a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Donar</a>
         </div>
 
-        <!-- FOTOS PROMOCIONALES -->
-        <div class="promo-container">
-            <div class="photo-card">
-                <img src="https://i.ibb.co/bgHm38Gj/HIr3s5-OXk-AA8r9-U-edit-552829902581950.jpg" alt="Promo 1">
-                <div class="cta-container">
-                    <p class="cta-text">¿Te gusta mi contenido? Me puedes ayudar con una colaboración</p>
-                    <a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Donar</a>
-                </div>
-            </div>
-            <div class="photo-card">
-                <img src="https://i.ibb.co/jvPKv8kX/1783091314453-edit-552745648592176.png" alt="Promo 2">
-                <div class="cta-container">
-                    <p class="cta-text">¿Te gusta mi contenido? Me puedes ayudar con una colaboración</p>
-                    <a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Donar</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- SECCIÓN DE LA GALERÍA INFERIOR -->
         <div class="gallery">
-            <!-- Foto existente -->
+            <!-- Nueva foto única -->
             <div class="photo-card">
-                <img src="https://i.ibb.co/XfMBr28k/1782665932822-edit-226928680949294.png" alt="Foto">
-                <div class="cta-container">
-                    <p class="cta-text">¿Te gusta mi contenido? Me puedes ayudar con una colaboración</p>
-                    <a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Donar</a>
-                </div>
+                <img src="https://i.ibb.co/n8m6mCGV/Dise-o-sin-t-tulo-20260703-231756-0000.jpg" alt="Foto">
+                <div class="cta-container"><a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Donar</a></div>
             </div>
-            
-            <!-- Cuando añadas más fotos en el futuro, cópialas con esta misma estructura:
-            <div class="photo-card">
-                <img src="URL_DE_TU_FOTO" alt="Foto">
-                <div class="cta-container">
-                    <p class="cta-text">¿Te gusta mi contenido? Me puedes ayudar con una colaboración</p>
-                    <a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Donar</a>
-                </div>
-            </div>
-            -->
+            <!-- (Añade el resto de tus fotos aquí en el futuro con la misma estructura) -->
         </div>
     </div>
 
@@ -101,6 +64,7 @@
             document.getElementById('galeria-completa').style.display = 'block';
             
             // 3. CARGAR EL SCRIPT DE ADSTERRA AQUÍ
+            // Esto inserta el script en la página solo cuando se muestra la galería
             var adsterraScript = document.createElement('script');
             adsterraScript.src = 'https://sensibleexterminatorprivate.com/a9/e3/1d/a9e31dacbfac71860684e217e832634c.js';
             document.body.appendChild(adsterraScript);
