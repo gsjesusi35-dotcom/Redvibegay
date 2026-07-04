@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Galería Exclusiva</title>
     
-    <!-- EL SCRIPT DE ADSTERRA YA NO ESTÁ AQUÍ -->
-    
     <style>
         body { font-family: 'Arial', sans-serif; background-color: #1a1a1a; color: white; text-align: center; padding: 20px; margin: 0; }
         
@@ -29,14 +27,12 @@
 </head>
 <body>
 
-    <!-- PANTALLA DE BIENVENIDA (LIBRE DE ANUNCIOS) -->
     <div id="bienvenida">
         <h1>¡Bienvenidos!</h1>
         <p>En este sitio estaremos subiendo las fotos de los uniformados más guapos del internet.</p>
         <button class="btn-continuar" onclick="mostrarGaleria()">Continuar</button>
     </div>
 
-    <!-- GALERÍA COMPLETA (AQUÍ SE ACTIVARÁN LOS ANUNCIOS) -->
     <div id="galeria-completa">
         <h1>Mis Fotos Exclusivas</h1>
 
@@ -46,13 +42,16 @@
         </div>
 
         <div class="gallery">
-            <!-- Nueva foto única -->
+            <div class="photo-card">
+                <img src="https://i.ibb.co/PvjNWvnx/20260704-155206-0000.jpg" alt="Foto">
+                <div class="cta-container"><a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Donar</a></div>
+            </div>
+
             <div class="photo-card">
                 <img src="https://i.ibb.co/n8m6mCGV/Dise-o-sin-t-tulo-20260703-231756-0000.jpg" alt="Foto">
                 <div class="cta-container"><a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Donar</a></div>
             </div>
-            <!-- (Añade el resto de tus fotos aquí en el futuro con la misma estructura) -->
-        </div>
+            </div>
     </div>
 
     <script>
