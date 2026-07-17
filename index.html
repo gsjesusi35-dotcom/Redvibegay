@@ -27,57 +27,19 @@
         .nav-btn { flex: 1; background: white; color: #6c63ff; border: none; padding: 8px 5px; border-radius: 5px; cursor: pointer; font-size: 11px; font-weight: bold; }
         .nav-btn.salir { background: #ff4757; color: white; flex: 0.5; }
         
-        /* Estilos del anuncio centrado */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 99999; }
-        
-        .modal-content { 
-            background: white; 
-            padding: 45px 20px 30px 20px; 
-            border-radius: 20px; 
-            max-width: 300px; 
-            width: 85%; 
-            position: relative; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
-            text-align: center; 
-            box-sizing: border-box;
-        }
-        
-        .close-btn { 
-            position: absolute !important; 
-            top: 10px !important; 
-            right: 15px !important; 
-            background: transparent !important; 
-            border: none !important; 
-            color: #888 !important; 
-            font-size: 30px !important; 
-            cursor: pointer !important; 
-            font-weight: bold !important; 
-            line-height: 1 !important; 
-            padding: 5px !important;
-            width: auto !important;
-            margin: 0 !important;
-        }
+        .modal-content { background: white; padding: 45px 20px 30px 20px; border-radius: 20px; max-width: 300px; width: 85%; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; box-sizing: border-box; }
+        .close-btn { position: absolute !important; top: 10px !important; right: 15px !important; background: transparent !important; border: none !important; color: #888 !important; font-size: 30px !important; cursor: pointer !important; font-weight: bold !important; line-height: 1 !important; padding: 5px !important; width: auto !important; margin: 0 !important; }
         .close-btn:hover { color: #333 !important; }
-        
         .modal-text { margin: 0; font-size: 16px; color: #333; font-weight: bold; line-height: 1.4; }
-
         .chat-item { display: flex; justify-content: space-between; align-items: center; background: #f9f9f9; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #eee; text-align: left; }
         .chat-item-name { font-weight: bold; color: #333; }
-
-        /* Estilos para los enlaces detectados */
         .detect-link { color: #6c63ff; text-decoration: underline; word-break: break-all; }
     </style>
 
     <script>
-        function cerrarAnuncio() { 
-            const ad = document.getElementById('anuncio-centrado');
-            if (ad) ad.style.display = 'none'; 
-        }
-        function mostrarPantalla(id) { 
-            document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden')); 
-            const screen = document.getElementById(id);
-            if (screen) screen.classList.remove('hidden'); 
-        }
+        function cerrarAnuncio() { const ad = document.getElementById('anuncio-centrado'); if (ad) ad.style.display = 'none'; }
+        function mostrarPantalla(id) { document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden')); const screen = document.getElementById(id); if (screen) screen.classList.remove('hidden'); }
     </script>
 </head>
 <body>
@@ -133,9 +95,7 @@
             if (!texto) return "";
             const urlRegex = /(https?:\/\/[^\s]+)/g;
             return texto.replace(urlRegex, function(url) {
-                if (url.includes("canva.com") || url.includes("twitter.com") || url.includes("x.com")) {
-                    return url; 
-                }
+                if (url.includes("canva.com") || url.includes("twitter.com") || url.includes("x.com")) return url; 
                 return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="detect-link">${url}</a>`;
             });
         };
@@ -150,11 +110,7 @@
 
         async function actualizarContador() { const snapshot = await getCountFromServer(collection(db, "usuarios")); document.getElementById("contador-usuarios").innerText = "Usuarios registrados: " + snapshot.data().count; }
         
-        window.onload = () => { 
-            actualizarContador(); 
-            cargarPosts(); 
-            actualizarBarras(); 
-        };
+        window.onload = () => { actualizarContador(); cargarPosts(); actualizarBarras(); };
         
         window.realizarRegistro = async () => {
             const user = document.getElementById('regUsuario').value; const email = document.getElementById('regEmail').value; const pass = document.getElementById('pass').value;
@@ -209,35 +165,19 @@
         function escucharMensajes() {
             if (unsubscribeChat) unsubscribeChat(); 
             const usuarioLogueado = localStorage.getItem("usuario");
-            
             const q = query(collection(db, "mensajes"), orderBy("fecha", "asc"));
-
             unsubscribeChat = onSnapshot(q, (snap) => {
                 const contenedor = document.getElementById("mensajes-chat");
                 contenedor.innerHTML = "";
                 snap.forEach((doc) => {
                     const m = doc.data();
-                    
                     const esMensajeGlobal = chatActivoId === "CHAT_GLOBAL" && m.para === "CHAT_GLOBAL";
-                    const esMensajePrivado = chatActivoId !== "CHAT_GLOBAL" && (
-                        (m.de === usuarioLogueado && m.para === chatActivoId) ||
-                        (m.de === chatActivoId && m.para === usuarioLogueado)
-                    );
-
+                    const esMensajePrivado = chatActivoId !== "CHAT_GLOBAL" && ((m.de === usuarioLogueado && m.para === chatActivoId) || (m.de === chatActivoId && m.para === usuarioLogueado));
                     if (esMensajeGlobal || esMensajePrivado) {
                         const esMio = m.de === usuarioLogueado;
                         const div = document.createElement("div");
-                        
-                        div.style.marginBottom = "10px";
-                        div.style.textAlign = esMio ? "right" : "left";
-                        
-                        div.innerHTML = `
-                            <span style="font-size:10px; color:#777; display:block; margin-bottom:2px;"><b>${m.de}</b></span>
-                            <div style="display:inline-block; background:${esMio ? '#6c63ff' : '#eee'}; color:${esMio ? 'white' : '#333'}; padding:8px 12px; border-radius:10px; max-width:80%; text-align:left; word-wrap: break-word;">
-                                ${m.texto ? `<div>${window.convertirEnlaces(m.texto)}</div>` : ""}
-                                ${m.imagenMensaje ? `<img src="${m.imagenMensaje}" style="width:100%; max-width:150px; border-radius:5px; margin-top:5px; display:block;">` : ""}
-                            </div>
-                        `;
+                        div.style.marginBottom = "10px"; div.style.textAlign = esMio ? "right" : "left";
+                        div.innerHTML = `<span style="font-size:10px; color:#777; display:block; margin-bottom:2px;"><b>${m.de}</b></span><div style="display:inline-block; background:${esMio ? '#6c63ff' : '#eee'}; color:${esMio ? 'white' : '#333'}; padding:8px 12px; border-radius:10px; max-width:80%; text-align:left; word-wrap: break-word;">${m.texto ? `<div>${window.convertirEnlaces(m.texto)}</div>` : ""}${m.imagenMensaje ? `<img src="${m.imagenMensaje}" style="width:100%; max-width:150px; border-radius:5px; margin-top:5px; display:block;">` : ""}</div>`;
                         contenedor.appendChild(div);
                     }
                 });
@@ -259,7 +199,25 @@
                     const div = document.createElement("div");
                     div.style.marginTop = "20px"; div.style.borderBottom = "2px solid #eee"; div.style.paddingBottom = "10px";
                     
-                    div.innerHTML = `<div style="text-align:left;"><b>${p.autor}</b></div><div id="contenedor-contenido-${id}" style="text-align:left;"></div>${p.imagenPost ? `<img src="${p.imagenPost}" style="width:100%; border-radius:10px;">` : ""}<div style="text-align:left;"><button class="like-btn" onclick="darLike('${id}')">❤️ ${p.likes || 0}</button><button class="share-btn" onclick="compartirPost('','${id}')">Compartir</button>${btnElim}</div><div class="com-section"><div id="lista-com-${id}"></div><div style="display:flex; gap:5px;"><input id="com-${id}" placeholder="Comentar..." style="margin:0; font-size:12px;"><button onclick="comentar('${id}')" style="margin:0; width:auto; padding:5px 10px; font-size:12px;">Enviar</button></div></div>`;
+                    div.innerHTML = `
+                        <div style="text-align:left;"><b>${p.autor}</b></div>
+                        <div id="contenedor-contenido-${id}" style="text-align:left;"></div>
+                        ${p.imagenPost ? `<img src="${p.imagenPost}" style="width:100%; border-radius:10px;">` : ""}
+                        <div style="text-align:left;">
+                            <button class="like-btn" onclick="darLike('${id}')">❤️ ${p.likes || 0}</button>
+                            <a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" target="_blank" style="display:block; margin: 5px 0; font-size: 11px; color: #6c63ff; text-decoration: underline;">
+                                Si te gustó, apoya con algún regalito, haz clic aquí
+                            </a>
+                            <button class="share-btn" onclick="compartirPost('','${id}')">Compartir</button>
+                            ${btnElim}
+                        </div>
+                        <div class="com-section">
+                            <div id="lista-com-${id}"></div>
+                            <div style="display:flex; gap:5px;">
+                                <input id="com-${id}" placeholder="Comentar..." style="margin:0; font-size:12px;">
+                                <button onclick="comentar('${id}')" style="margin:0; width:auto; padding:5px 10px; font-size:12px;">Enviar</button>
+                            </div>
+                        </div>`;
                     contenedor.appendChild(div);
 
                     onSnapshot(collection(db, "posts", id, "comentarios"), (snapCom) => {
