@@ -25,6 +25,15 @@
         .cta-text { font-size: 0.9em; margin-bottom: 10px; color: #cccccc; }
         .donate-btn { display: inline-block; padding: 10px 20px; background-color: #0070ba; color: white; text-decoration: none; border-radius: 20px; font-weight: bold; transition: background 0.3s; }
         .donate-btn:hover { background-color: #005ea6; }
+
+        /* Estilos para el botón de compartir */
+        .share-btn { display: inline-block; margin-top: 8px; padding: 8px 16px; background-color: #333333; color: #ffffff; text-decoration: none; border-radius: 15px; font-size: 0.85em; font-weight: bold; border: 1px solid #555555; cursor: pointer; transition: background 0.3s; }
+        .share-btn:hover { background-color: #444444; }
+
+        /* Estilos para la vista individual al compartir y botón de regresar */
+        #vista-individual { display: none; padding: 20px; max-width: 600px; margin: 0 auto; }
+        .btn-regresar { display: inline-block; margin-bottom: 20px; padding: 10px 25px; background-color: #555555; color: white; text-decoration: none; border-radius: 20px; font-weight: bold; cursor: pointer; border: none; font-size: 1em; transition: background 0.3s; }
+        .btn-regresar:hover { background-color: #777777; }
     </style>
 </head>
 <body>
@@ -34,6 +43,19 @@
         <h1>¡Bienvenidos!</h1>
         <p>En este sitio estaremos subiendo las fotos de los uniformados más guapos del internet.</p>
         <button class="btn-continuar" onclick="mostrarGaleria()">Continuar</button>
+    </div>
+
+    <!-- VISTA INDIVIDUAL DE LA FOTO COMPARTIDA -->
+    <div id="vista-individual">
+        <button class="btn-regresar" onclick="regresarAlInicio()">⬅ Regresar a la página principal</button>
+        <div class="photo-card">
+            <img id="img-compartida" src="" alt="Foto">
+            <div class="cta-container">
+                <a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Haz click aquí si te gustó esta foto</a>
+                <br>
+                <button class="share-btn" onclick="compartirActual()">Compartir 📤</button>
+            </div>
+        </div>
     </div>
 
     <!-- GALERÍA COMPLETA (AQUÍ SE ACTIVARÁN LOS ANUNCIOS) -->
@@ -49,53 +71,93 @@
             <!-- NUEVA FOTO (De primera opción) -->
             <div class="photo-card">
                 <img src="https://i.ibb.co/MkDgGL9J/20260708-211936-0000.jpg" alt="Foto">
-                <div class="cta-container"><a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Haz click aquí si te gustó esta foto</a></div>
+                <div class="cta-container">
+                    <a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Haz click aquí si te gustó esta foto</a>
+                    <br>
+                    <button class="share-btn" onclick="compartirFoto('https://i.ibb.co/MkDgGL9J/20260708-211936-0000.jpg')">Compartir 📤</button>
+                </div>
             </div>
 
             <!-- Fotos anteriores -->
             <div class="photo-card">
                 <img src="https://i.ibb.co/Lz5fz3nv/20260707-205411-0000.jpg" alt="Foto">
-                <div class="cta-container"><a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Haz click aquí si te gustó esta foto</a></div>
+                <div class="cta-container">
+                    <a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Haz click aquí si te gustó esta foto</a>
+                    <br>
+                    <button class="share-btn" onclick="compartirFoto('https://i.ibb.co/Lz5fz3nv/20260707-205411-0000.jpg')">Compartir 📤</button>
+                </div>
             </div>
 
             <div class="photo-card">
                 <img src="https://i.ibb.co/cSL0hLY3/20260707-122742-0000.jpg" alt="Foto">
-                <div class="cta-container"><a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Haz click aquí si te gustó esta foto</a></div>
+                <div class="cta-container">
+                    <a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Haz click aquí si te gustó esta foto</a>
+                    <br>
+                    <button class="share-btn" onclick="compartirFoto('https://i.ibb.co/cSL0hLY3/20260707-122742-0000.jpg')">Compartir 📤</button>
+                </div>
             </div>
 
             <div class="photo-card">
                 <img src="https://i.ibb.co/mdNR92V/Dise-o-sin-t-tulo-20260706-215749-0000.jpg" alt="Foto">
-                <div class="cta-container"><a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Haz click aquí si te gustó esta foto</a></div>
+                <div class="cta-container">
+                    <a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Haz click aquí si te gustó esta foto</a>
+                    <br>
+                    <button class="share-btn" onclick="compartirFoto('https://i.ibb.co/mdNR92V/Dise-o-sin-t-tulo-20260706-215749-0000.jpg')">Compartir 📤</button>
+                </div>
             </div>
 
             <div class="photo-card">
                 <img src="https://i.ibb.co/hxKW22Gt/20260706-140503-0000.jpg" alt="Foto">
-                <div class="cta-container"><a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Haz click aquí si te gustó esta foto</a></div>
+                <div class="cta-container">
+                    <a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Haz click aquí si te gustó esta foto</a>
+                    <br>
+                    <button class="share-btn" onclick="compartirFoto('https://i.ibb.co/hxKW22Gt/20260706-140503-0000.jpg')">Compartir 📤</button>
+                </div>
             </div>
 
             <div class="photo-card">
                 <img src="https://i.ibb.co/G4JNhwd5/Dise-o-sin-t-tulo-20260705-211638-0000.jpg" alt="Foto">
-                <div class="cta-container"><a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Haz click aquí si te gustó esta foto</a></div>
+                <div class="cta-container">
+                    <a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Haz click aquí si te gustó esta foto</a>
+                    <br>
+                    <button class="share-btn" onclick="compartirFoto('https://i.ibb.co/G4JNhwd5/Dise-o-sin-t-tulo-20260705-211638-0000.jpg')">Compartir 📤</button>
+                </div>
             </div>
 
             <div class="photo-card">
                 <img src="https://i.ibb.co/8nzLyRV1/20260705-141131-0000.jpg" alt="Foto">
-                <div class="cta-container"><a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Haz click aquí si te gustó esta foto</a></div>
+                <div class="cta-container">
+                    <a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Haz click aquí si te gustó esta foto</a>
+                    <br>
+                    <button class="share-btn" onclick="compartirFoto('https://i.ibb.co/8nzLyRV1/20260705-141131-0000.jpg')">Compartir 📤</button>
+                </div>
             </div>
 
             <div class="photo-card">
                 <img src="https://i.ibb.co/HDVjTHQ8/20260704-215452-0000.jpg" alt="Foto">
-                <div class="cta-container"><a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Haz click aquí si te gustó esta foto</a></div>
+                <div class="cta-container">
+                    <a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Haz click aquí si te gustó esta foto</a>
+                    <br>
+                    <button class="share-btn" onclick="compartirFoto('https://i.ibb.co/HDVjTHQ8/20260704-215452-0000.jpg')">Compartir 📤</button>
+                </div>
             </div>
 
             <div class="photo-card">
                 <img src="https://i.ibb.co/rGggYJL8/20260704-155206-0000.jpg" alt="Foto">
-                <div class="cta-container"><a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Haz click aquí si te gustó esta foto</a></div>
+                <div class="cta-container">
+                    <a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Haz click aquí si te gustó esta foto</a>
+                    <br>
+                    <button class="share-btn" onclick="compartirFoto('https://i.ibb.co/rGggYJL8/20260704-155206-0000.jpg')">Compartir 📤</button>
+                </div>
             </div>
 
             <div class="photo-card">
                 <img src="https://i.ibb.co/n8m6mCGV/Dise-o-sin-t-tulo-20260703-231756-0000.jpg" alt="Foto">
-                <div class="cta-container"><a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Haz click aquí si te gustó esta foto</a></div>
+                <div class="cta-container">
+                    <a href="https://www.paypal.com/ncp/payment/3KV97F5Q798NJ" class="donate-btn" target="_blank">Haz click aquí si te gustó esta foto</a>
+                    <br>
+                    <button class="share-btn" onclick="compartirFoto('https://i.ibb.co/n8m6mCGV/Dise-o-sin-t-tulo-20260703-231756-0000.jpg')">Compartir 📤</button>
+                </div>
             </div>
         </div>
     </div>
@@ -109,11 +171,75 @@
             document.getElementById('galeria-completa').style.display = 'block';
             
             // 3. CARGAR EL SCRIPT DE ADSTERRA AQUÍ
-            // Esto inserta el script en la página solo cuando se muestra la galería
             var adsterraScript = document.createElement('script');
             adsterraScript.src = 'https://sensibleexterminatorprivate.com/a9/e3/1d/a9e31dacbfac71860684e217e832634c.js';
             document.body.appendChild(adsterraScript);
         }
+
+        // Función para mostrar únicamente la publicación seleccionada al compartir
+        function compartirFoto(urlFoto) {
+            // Ocultar bienvenida y galería completa
+            document.getElementById('bienvenida').style.display = 'none';
+            document.getElementById('galeria-completa').style.display = 'none';
+            
+            // Asignar la imagen a la vista individual y mostrarla
+            document.getElementById('img-compartida').src = urlFoto;
+            document.getElementById('vista-individual').style.display = 'block';
+
+            // Actualizar la URL con el parámetro de la foto para que al compartir abra solo esa foto
+            const urlConFoto = window.location.origin + window.location.pathname + '?foto=' + encodeURIComponent(urlFoto);
+            window.history.pushState({path: urlConFoto}, '', urlConFoto);
+
+            // Ejecutar la acción nativa de compartir o copiar el enlace directo
+            if (navigator.share) {
+                navigator.share({
+                    title: '¡Mira esta foto exclusiva!',
+                    text: '¡Encontré esta foto genial en Mi Galería Exclusiva!',
+                    url: urlConFoto,
+                }).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(urlConFoto).then(() => {
+                    alert('¡Enlace de esta publicación copiado al portapapeles!');
+                });
+            }
+        }
+
+        // Función para compartir estando ya en la vista individual
+        function compartirActual() {
+            const urlActual = window.location.href;
+            if (navigator.share) {
+                navigator.share({
+                    title: '¡Mira esta foto exclusiva!',
+                    text: '¡Encontré esta foto genial en Mi Galería Exclusiva!',
+                    url: urlActual,
+                }).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(urlActual).then(() => {
+                    alert('¡Enlace copiado al portapapeles!');
+                });
+            }
+        }
+
+        // Función para regresar a la página principal
+        function regresarAlInicio() {
+            document.getElementById('vista-individual').style.display = 'none';
+            document.getElementById('galeria-completa').style.display = 'block';
+            // Limpiar el parámetro de la URL
+            window.history.pushState({}, '', window.location.pathname);
+        }
+
+        // Detectar si alguien entra mediante un enlace compartido con una foto específica
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const fotoParam = urlParams.get('foto');
+            if (fotoParam) {
+                document.getElementById('bienvenida').style.display = 'none';
+                document.getElementById('galeria-completa').style.display = 'none';
+                document.getElementById('img-compartida').src = fotoParam;
+                document.getElementById('vista-individual').style.display = 'block';
+            }
+        }
     </script>
 </body>
-</html>
+    </html>
+    
