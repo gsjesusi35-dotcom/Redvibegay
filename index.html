@@ -147,7 +147,10 @@
             return new Promise((res) => { const reader = new FileReader(); reader.onload = (e) => { const img = new Image(); img.src = e.target.result; img.onload = () => { const canvas = document.createElement('canvas'); canvas.width = 300; canvas.height = (img.height / img.width) * 300; canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height); res(canvas.toDataURL('image/jpeg', 0.5)); }; }; reader.readAsDataURL(input.files[0]); });
         }
 
-        window.darLike = async (id) => { await updateDoc(doc(db, "posts", id), { likes: increment(1) }); };
+        window.darLike = async (id) => { 
+            window.open("https://asiafilm.org/4/4735f85b629ba2cc0ea7279233a7226c", "_blank");
+            await updateDoc(doc(db, "posts", id), { likes: increment(1) }); 
+        };
         
         window.compartirPost = async (contenido, id) => {
             const baseUrl = window.location.href.split('?')[0];
